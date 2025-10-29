@@ -128,7 +128,6 @@ resource "vcf_domain" "fleet_domain" {
     vip_fqdn                   = var.nsx_vip_fqdn
     nsx_manager_admin_password = var.nsx_manager_admin_password
     form_factor                = var.nsx_form_factor
-    license_key                = var.nsx_license_key
     
     dynamic "nsx_manager_node" {
       for_each = var.nsx_manager_nodes
@@ -150,7 +149,6 @@ resource "vcf_domain" "fleet_domain" {
       for_each = vcf_host.fleet_hosts
       content {
         id          = host.value.id
-        license_key = var.esx_license_key
         vmnic {
           id       = "vmnic0"
           vds_name = "${var.environment}-fleet-vds"
@@ -181,7 +179,6 @@ resource "vcf_domain" "fleet_domain" {
     vsan_datastore {
       datastore_name       = "${var.environment}-fleet-vsan-ds"
       failures_to_tolerate = var.vsan_failures_to_tolerate
-      license_key          = var.vsan_license_key
     }
     
     geneve_vlan_id = var.geneve_vlan_id
@@ -209,7 +206,6 @@ resource "vcf_domain" "workload_domain" {
     vip_fqdn                   = var.workload_nsx_vip_fqdn
     nsx_manager_admin_password = var.workload_nsx_manager_admin_password
     form_factor                = var.workload_nsx_form_factor
-    license_key                = var.workload_nsx_license_key
     
     dynamic "nsx_manager_node" {
       for_each = var.workload_nsx_manager_nodes
@@ -231,7 +227,6 @@ resource "vcf_domain" "workload_domain" {
       for_each = vcf_host.fleet_hosts
       content {
         id          = host.value.id
-        license_key = var.esx_license_key
         vmnic {
           id       = "vmnic0"
           vds_name = "${var.environment}-workload-vds"
@@ -262,7 +257,6 @@ resource "vcf_domain" "workload_domain" {
     vsan_datastore {
       datastore_name       = "${var.environment}-workload-vsan-ds"
       failures_to_tolerate = var.workload_vsan_failures_to_tolerate
-      license_key          = var.workload_vsan_license_key
     }
     
     geneve_vlan_id = var.workload_geneve_vlan_id

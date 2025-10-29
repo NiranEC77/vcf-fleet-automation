@@ -304,11 +304,6 @@ variable "nsx_form_factor" {
   default     = "small"
 }
 
-variable "nsx_license_key" {
-  description = "NSX license key for fleet domain"
-  type        = string
-  sensitive   = true
-}
 
 variable "nsx_manager_nodes" {
   description = "NSX Manager nodes for fleet domain"
@@ -412,11 +407,6 @@ variable "workload_nsx_form_factor" {
   default     = "small"
 }
 
-variable "workload_nsx_license_key" {
-  description = "NSX license key for workload domain"
-  type        = string
-  sensitive   = true
-}
 
 variable "workload_nsx_manager_nodes" {
   description = "NSX Manager nodes for workload domain"
@@ -452,24 +442,6 @@ variable "workload_nsx_manager_nodes" {
   ]
 }
 
-# License Keys
-variable "esx_license_key" {
-  description = "ESXi license key"
-  type        = string
-  sensitive   = true
-}
-
-variable "vsan_license_key" {
-  description = "vSAN license key for fleet domain"
-  type        = string
-  sensitive   = true
-}
-
-variable "workload_vsan_license_key" {
-  description = "vSAN license key for workload domain"
-  type        = string
-  sensitive   = true
-}
 
 # vSAN Configuration
 variable "vsan_failures_to_tolerate" {

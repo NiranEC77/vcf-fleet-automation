@@ -41,7 +41,7 @@ This automation deploys:
 - **VCF Installer Appliance** (Cloud Builder) for VCF 9
 - **ESXi hosts** (minimum 4 for management domain, additional for workload domains)
 - **VCF 9.0.0+** (includes VCF Automation and Operations built-in)
-- **Valid VMware licenses** (ESXi, vSAN, NSX, VCF)
+ - Optional: VCDF license. VCF 9 boots in 90‑day evaluation by default; no ESXi/NSX/vSAN keys needed during bootstrap.
 - **Network infrastructure** with proper VLANs
 
 ### 🏗️ **Existing VCF Prerequisites (Use Case 2: Manage Existing)**
@@ -119,12 +119,7 @@ esx_hosts = [
   # Add more hosts...
 ]
 
-# License Keys
-esx_license_key              = "YOUR_ESX_LICENSE_KEY"
-vsan_license_key             = "YOUR_VSAN_LICENSE_KEY"
-nsx_license_key              = "YOUR_NSX_LICENSE_KEY"
-workload_vsan_license_key    = "YOUR_WORKLOAD_VSAN_LICENSE_KEY"
-workload_nsx_license_key     = "YOUR_WORKLOAD_NSX_LICENSE_KEY"
+# No license keys are required for VCF 9 bootstrap (90‑day evaluation period)
 ```
 
 ### Network Configuration
@@ -225,8 +220,7 @@ esx_hosts = [
 
 1. **Provider not found**: Ensure VCF provider is properly configured
 2. **Network conflicts**: Check VLAN and IP address assignments
-3. **License issues**: Verify all required licenses are valid
-4. **Host connectivity**: Ensure ESXi hosts are accessible
+3. **Host connectivity**: Ensure ESXi hosts are accessible
 
 ### Debugging
 

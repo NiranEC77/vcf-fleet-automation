@@ -79,7 +79,7 @@ nsx_vip                        = "192.168.10.11"
 nsx_vip_fqdn                   = "nsx-fleet.dev.example.com"
 nsx_manager_admin_password     = "VMware1!"
 nsx_form_factor                = "small"
-nsx_license_key                = "YOUR_NSX_LICENSE_KEY"
+## No NSX license key required for VCF 9 bootstrap (90-day eval)
 
 # vCenter Configuration - Workload Domain
 workload_vcenter_root_password = "VMware1!"
@@ -95,12 +95,9 @@ workload_nsx_vip                        = "192.168.20.11"
 workload_nsx_vip_fqdn                   = "nsx-workload.dev.example.com"
 workload_nsx_manager_admin_password     = "VMware1!"
 workload_nsx_form_factor                = "small"
-workload_nsx_license_key                = "YOUR_WORKLOAD_NSX_LICENSE_KEY"
+## No NSX license key required for VCF 9 bootstrap (90-day eval)
 
-# License Keys
-esx_license_key              = "YOUR_ESX_LICENSE_KEY"
-vsan_license_key             = "YOUR_VSAN_LICENSE_KEY"
-workload_vsan_license_key    = "YOUR_WORKLOAD_VSAN_LICENSE_KEY"
+## No ESXi/vSAN license keys required for VCF 9 bootstrap (90-day eval)
 
 # vSAN Configuration
 vsan_failures_to_tolerate           = 1
