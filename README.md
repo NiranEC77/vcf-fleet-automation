@@ -37,11 +37,23 @@ This automation deploys:
 
 ## Prerequisites
 
-- VMware Cloud Foundation 9.0.0+ (supports VCF Automation and Operations)
+### 🏗️ **VCF Infrastructure Prerequisites (REQUIRED)**
+- **Existing VCF Environment** with SDDC Manager already deployed
+- **VCF Management Domain** with at least 4 ESXi hosts for management
+- **SDDC Manager** running and accessible (IP/FQDN, username, password)
+- **VCF 9.0.0+** (supports VCF Automation and Operations)
+- **Valid VMware licenses** (ESXi, vSAN, NSX, VCF)
+
+### 🛠️ **Tool Prerequisites**
 - Terraform 1.4+
 - VCF Terraform Provider 0.17.0+
-- Valid VMware licenses (ESXi, vSAN, NSX)
-- Network connectivity to VCF environment
+- Network connectivity to VCF SDDC Manager
+
+### 📝 **Important Note**
+This automation **does NOT install VCF** - it requires an existing VCF environment. You must first:
+1. Deploy VCF using VMware Cloud Builder
+2. Complete VCF management domain setup
+3. Then use this automation to create additional workload domains
 
 ## Quick Start
 

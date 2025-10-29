@@ -33,6 +33,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 print_status "Setting up VCF Fleet Automation..."
+print_warning "IMPORTANT: This automation requires an existing VCF environment!"
+print_warning "VCF must be installed first using VMware Cloud Builder"
+print_warning "See VCF-INSTALLATION-GUIDE.md for detailed instructions"
 
 # Check prerequisites
 print_status "Checking prerequisites..."

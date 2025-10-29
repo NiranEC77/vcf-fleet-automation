@@ -1,5 +1,8 @@
 # VCF Fleet Deployment with VCF Automation and Operations
 # Development Environment Configuration
+# 
+# PREREQUISITE: VCF must be installed first using VMware Cloud Builder
+# This automation requires an existing VCF environment with SDDC Manager running
 
 terraform {
   required_version = ">= 1.4"
