@@ -1,0 +1,86 @@
+name: Terraform VCF Automation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'configs/**'
+      - 'scripts/**'
+      - '*.py'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'configs/**'
+      - 'scripts/**'
+      - '*.py'
+
+jobs:
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        environment: [dev, staging, prod]
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.4.0
+        
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive configs/
+      
+    - name: Terraform Init
+      run: |
+        cd configs/${{ matrix.environment }}
+        terraform init -backend=false
+        
+    - name: Terraform Validate
+      run: |
+        cd configs/${{ matrix.environment }}
+        terraform validate
+        
+    - name: Terraform Plan
+      run: |
+        cd configs/${{ matrix.environment }}
+        terraform plan -var-file=terraform.tfvars.example
+
+  python-lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyyaml flake8
+        
+    - name: Lint Python code
+      run: |
+        flake8 vcf_automation.py --max-line-length=100 --ignore=E501,W503
+
+  shell-lint:
+    name: Shell Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Run ShellCheck
+      uses: koalaman/shellcheck-action@v0.9.0
+      with:
+        scandir: 'scripts/'
