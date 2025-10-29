@@ -397,12 +397,8 @@ esx_hosts = [
   }
 ]
 
-# License Keys (update with your licenses)
-esx_license_key              = "YOUR_ESX_LICENSE_KEY"
-vsan_license_key             = "YOUR_VSAN_LICENSE_KEY"
-nsx_license_key              = "YOUR_NSX_LICENSE_KEY"
-workload_vsan_license_key    = "YOUR_WORKLOAD_VSAN_LICENSE_KEY"
-workload_nsx_license_key     = "YOUR_WORKLOAD_NSX_LICENSE_KEY"
+# No license keys required for VCF 9 bootstrap (90-day evaluation)
+# Licenses can be added later via VCF Operations
 
 # Passwords (update with secure passwords)
 vcenter_root_password                    = "VMware1!"
