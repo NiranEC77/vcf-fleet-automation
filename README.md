@@ -1,6 +1,30 @@
 # VCF Fleet Automation with Terraform
 
+[![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](https://terraform.io)
+[![VMware](https://img.shields.io/badge/VMware-607078.svg?style=for-the-badge&logo=VMware&logoColor=white)](https://www.vmware.com)
+[![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
 This repository contains Terraform configurations and automation scripts for deploying VMware Cloud Foundation (VCF) fleets with VCF Automation, VCF Operations, and workload domains with supervisor services enabled.
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/NiranEC77/vcf-fleet-automation.git
+cd vcf-fleet-automation
+
+# Run setup
+./setup.sh
+
+# Configure your environment
+cd configs/dev
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your VCF details
+
+# Deploy VCF fleet
+./scripts/vcf-deploy.sh dev
+```
 
 ## Overview
 
