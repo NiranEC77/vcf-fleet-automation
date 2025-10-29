@@ -1,8 +1,8 @@
-# VCF Installation Prerequisites Guide
+# VCF 9 Bootstrap and Management Guide
 
-## 🚨 **IMPORTANT: VCF Must Be Installed First!**
+## 🚀 **VCF 9 Bootstrap Process (New VCF Deployment)**
 
-This Terraform automation **does NOT install VCF** - it requires an existing VCF environment with SDDC Manager already running.
+This guide covers both VCF 9 bootstrap (new deployment) and management (existing VCF) scenarios.
 
 ## 📋 **VCF Installation Requirements**
 
@@ -29,16 +29,22 @@ This Terraform automation **does NOT install VCF** - it requires an existing VCF
 - **VCF Operations Network** (VLAN 104)
 - **NSX Overlay Network** (Geneve)
 
-## 🏗️ **VCF Installation Steps**
+## 🏗️ **VCF 9 Bootstrap Steps (New VCF)**
 
-### **Step 1: Deploy VCF Management Domain**
-1. **Use VMware Cloud Builder** to deploy VCF
+### **Step 1: Deploy VCF Installer Appliance**
+1. **Download VCF 9 Cloud Builder** installer appliance
+2. **Deploy Cloud Builder** on a management host
+3. **Configure Cloud Builder** with network settings
+
+### **Step 2: Bootstrap VCF Management Domain**
+1. **Launch Cloud Builder** web interface
 2. **Configure management domain** with 4 ESXi hosts minimum
-3. **Complete VCF setup** including:
+3. **Bootstrap VCF** which automatically includes:
    - SDDC Manager deployment
    - vCenter Server deployment
    - NSX Manager deployment
    - Management cluster creation
+   - **VCF Automation and Operations** (built into VCF 9)
 
 ### **Step 2: Verify VCF Installation**
 1. **Access SDDC Manager** web interface
@@ -56,6 +62,24 @@ This Terraform automation **does NOT install VCF** - it requires an existing VCF
    - Install ESXi on additional hosts
    - Configure network connectivity
    - Ensure hosts are accessible from SDDC Manager
+
+## 🏗️ **VCF Management Steps (Existing VCF)**
+
+### **Prerequisites for Existing VCF**
+- **VCF environment** already deployed and operational
+- **SDDC Manager** running and accessible
+- **Management domain** fully configured
+
+### **Step 1: Verify VCF Environment**
+1. **Access SDDC Manager** web interface
+2. **Verify management domain** is operational
+3. **Check VCF Automation/Operations** status
+4. **Test API connectivity**
+
+### **Step 2: Prepare for Terraform Management**
+1. **Gather SDDC Manager credentials**
+2. **Prepare additional ESXi hosts** for workload domains
+3. **Configure network settings** for new domains
 
 ## 🔧 **VCF Installation Commands**
 
@@ -81,36 +105,45 @@ curl -k https://<sddc-manager-ip>/v1/sddc-manager/health
 # Navigate to: https://<sddc-manager-ip>
 ```
 
-## 📊 **VCF Architecture Overview**
+## 📊 **VCF 9 Architecture Overview**
 
+### **VCF 9 Bootstrap Process:**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    VCF Management Domain                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   ESXi 1    │  │   ESXi 2    │  │   ESXi 3    │        │
-│  │             │  │             │  │             │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   ESXi 4    │  │ SDDC Manager│  │ vCenter/NSX │        │
-│  │             │  │             │  │             │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-└─────────────────────────────────────────────────────────────┘
-                                │
-                                │ Terraform Provider
-                                │ (This Automation)
-                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  VCF Workload Domains                      │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   ESXi 5    │  │   ESXi 6    │  │   ESXi 7    │        │
-│  │             │  │             │  │             │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   ESXi 8    │  │ vCenter/NSX │  │ Supervisor  │        │
-│  │             │  │             │  │ Services    │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-└─────────────────────────────────────────────────────────────┘
+1. VCF Installer Appliance (Cloud Builder)
+   ↓
+2. Bootstrap VCF Management Domain
+   ┌─────────────────────────────────────────────────────────────┐
+   │              VCF 9 Management Domain                       │
+   │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+   │  │   ESXi 1    │  │   ESXi 2    │  │   ESXi 3    │        │
+   │  │             │  │             │  │             │        │
+   │  └─────────────┘  └─────────────┘  └─────────────┘        │
+   │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+   │  │   ESXi 4    │  │ SDDC Manager│  │ vCenter/NSX │        │
+   │  │             │  │ + VCF Auto  │  │ + VCF Ops   │        │
+   │  └─────────────┘  └─────────────┘  └─────────────┘        │
+   └─────────────────────────────────────────────────────────────┘
+                                   │
+                                   │ Terraform Provider
+                                   │ (This Automation)
+                                   ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │                VCF Workload Domains                       │
+   │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+   │  │   ESXi 5    │  │   ESXi 6    │  │   ESXi 7    │        │
+   │  │             │  │             │  │             │        │
+   │  └─────────────┘  └─────────────┘  └─────────────┘        │
+   │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+   │  │   ESXi 8    │  │ vCenter/NSX │  │ Supervisor  │        │
+   │  │             │  │             │  │ Services    │        │
+   │  └─────────────┘  └─────────────┘  └─────────────┘        │
+   └─────────────────────────────────────────────────────────────┘
 ```
+
+### **Key VCF 9 Differences:**
+- **VCF Automation and Operations** are built into the management domain
+- **No separate installation** required for VCFA/VCFO
+- **Bootstrap process** initializes the entire VCF fleet
 
 ## ⚠️ **Common Issues and Solutions**
 
