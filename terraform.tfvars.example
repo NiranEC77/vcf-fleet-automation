@@ -11,14 +11,14 @@
 use_cloud_builder = true
 
 # Cloud Builder / VCF Installer Configuration (use_cloud_builder = true)
-installer_host     = "holo9-vcfinstaller-usethis.vcf.lab"  # Your Cloud Builder hostname/IP
+installer_host     = "10.1.1.191"  # Your Cloud Builder hostname/IP
 installer_username = "admin"
 installer_password = "VMware123!VMware123!"
 
 # SDDC Manager Configuration (use_cloud_builder = false)
 # Only needed after VCF is deployed
 sddc_manager_host     = null  # Set after bootstrap: "sddc-mgr9.vcf.lab"
-sddc_manager_username = "administrator@vsphere.local"
+sddc_manager_username = "admin@local"
 sddc_manager_password = null  # Set after bootstrap
 
 allow_unverified_tls = true  # Set to true for self-signed certificates or IP addresses
@@ -41,9 +41,9 @@ vcf_version                    = "9.0.1.0"
 # ============================================================================
 
 dns_domain               = "vcf.lab"
-dns_nameserver           = "10.0.0.201"
+dns_nameserver           = "10.1.1.1"
 dns_secondary_nameserver = null
-ntp_servers              = ["10.0.0.221"]
+ntp_servers              = ["10.1.1.1"]
 
 # ============================================================================
 # Management Domain - vCenter Configuration
@@ -52,7 +52,7 @@ ntp_servers              = ["10.0.0.221"]
 mgmt_vcenter_hostname       = "vcsa9-mgmt.vcf.lab"
 mgmt_vcenter_root_password  = "VMware123!VMware123!"
 mgmt_vcenter_vm_size        = "medium"
-mgmt_vcenter_storage_size   = "lstorage"
+mgmt_vcenter_storage_size   = ""
 mgmt_vcenter_ssl_thumbprint = ""  # Leave empty for automatic - no manual thumbprint needed
 
 # ============================================================================
@@ -78,28 +78,28 @@ mgmt_vsan_esa_enabled          = false
 
 mgmt_esxi_hosts = [
   {
-    hostname       = "esx9-1.vcf.lab"
+    hostname       = "esx-01a.site-a.vcf.lab"
     username       = "root"
     password       = "VMware123!VMware123!"
     ssl_thumbprint = ""  # Leave empty - automatic validation skip
     ssh_thumbprint = ""  # Leave empty - automatic validation skip
   },
   {
-    hostname       = "esx9-2.vcf.lab"
+    hostname       = "esx-02a.site-a.vcf.lab"
     username       = "root"
     password       = "VMware123!VMware123!"
     ssl_thumbprint = ""
     ssh_thumbprint = ""
   },
   {
-    hostname       = "esx9-3.vcf.lab"
+    hostname       = "esx-03a.site-a.vcf.lab"
     username       = "root"
     password       = "VMware123!VMware123!"
     ssl_thumbprint = ""
     ssh_thumbprint = ""
   },
   {
-    hostname       = "esx9-4.vcf.lab"
+    hostname       = "esx-04a.site-a.vcf.lab"
     username       = "root"
     password       = "VMware123!VMware123!"
     ssl_thumbprint = ""
@@ -114,11 +114,11 @@ mgmt_esxi_hosts = [
 mgmt_networks = [
   {
     network_type    = "MANAGEMENT"
-    vlan_id         = 3139
+    vlan_id         = 10
     mtu             = 1500
-    subnet          = "10.0.0.0/24"
+    subnet          = "10.1.1.0/24"
     subnet_mask     = "255.255.255.0"
-    gateway         = "10.0.0.221"
+    gateway         = "10.1.1.1"
     port_group_key  = "vcf9-cl01-vds01-pg-esx-mgmt"
     teaming_policy  = "loadbalance_loadbased"
     active_uplinks  = ["uplink1", "uplink2"]
@@ -127,7 +127,7 @@ mgmt_networks = [
   },
   {
     network_type    = "VM_MANAGEMENT"
-    vlan_id         = 3139
+    vlan_id         = 10
     mtu             = 1500
     subnet          = "10.0.0.0/24"
     subnet_mask     = "255.255.255.0"
@@ -385,14 +385,14 @@ workload_clusters = [
     evc_mode                  = null
     high_availability_enabled = true
     geneve_vlan_id            = 3138
-    
+
     vsan_datastore = {
       datastore_name                = "cls-wld9-vsan01"
       failures_to_tolerate          = 1
       dedup_and_compression_enabled = true
       esa_enabled                   = false
     }
-    
+
     # Hosts with their vmnic configurations
     # Host IDs are UUIDs obtained after hosts are commissioned in SDDC Manager
     hosts = [
@@ -472,7 +472,7 @@ workload_clusters = [
         ]
       }
     ]
-    
+
     vds_configs = [
       {
         name          = "cls-wld9-vds-01"
@@ -501,7 +501,7 @@ workload_clusters = [
         portgroups    = []
       }
     ]
-    
+
     # IP Pool for NSX TEP in workload domain
     ip_address_pool = {
       name        = "cls-wld9-tep-pool"
@@ -544,7 +544,7 @@ workload_clusters = [
 #    Example edge configuration would be added as a separate resource.
 
 # 3. Supervisor Pools:
-#    Supervisor pools are configured within the supervisor namespace and 
+#    Supervisor pools are configured within the supervisor namespace and
 #    are typically managed through the vSphere/NSX interface or separate
 #    Terraform resources after supervisor activation.
 
