@@ -50,10 +50,13 @@ ntp_servers              = ["10.1.1.1"]
 # ============================================================================
 
 mgmt_vcenter_hostname       = "vc-mgmt-a.site-a.vcf.lab"
-mgmt_vcenter_root_password  = "VMware123!VMware123!"
+mgmt_vcenter_root_password  = "VMware123!VMware123!"  # Root OS password for vCenter appliance
+mgmt_vcenter_admin_password = "VMware123!VMware123!"  # SSO administrator@vsphere.local password
 mgmt_vcenter_vm_size        = "medium"
 mgmt_vcenter_storage_size   = "lstorage"
 mgmt_vcenter_ssl_thumbprint = ""  # Leave empty for automatic - no manual thumbprint needed
+
+# Note: In VCF bootstrap, both passwords are typically set to the same value
 
 # ============================================================================
 # Management Domain - Cluster Configuration
@@ -323,11 +326,12 @@ workload_domain_org_name = null
 # Workload Domain - vCenter Configuration
 # ============================================================================
 
-workload_vcenter_name         = "vcsa9-wld"
-workload_datacenter_name      = "wld9-DC"
+workload_vcenter_name          = "vcsa9-wld"
+workload_datacenter_name       = "wld9-DC"
 workload_vcenter_root_password = "VMware123!VMware123!"
-workload_vcenter_vm_size      = "medium"
-workload_vcenter_storage_size = "lstorage"
+workload_vcenter_admin_password = "VMware123!VMware123!"  # SSO admin password
+workload_vcenter_vm_size       = "medium"
+workload_vcenter_storage_size  = "lstorage"
 workload_vcenter_ip           = "10.0.0.25"
 workload_vcenter_subnet_mask  = "255.255.255.0"
 workload_vcenter_gateway      = "10.0.0.221"

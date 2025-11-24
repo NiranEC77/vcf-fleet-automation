@@ -141,6 +141,12 @@ variable "mgmt_vcenter_root_password" {
   sensitive   = true
 }
 
+variable "mgmt_vcenter_admin_password" {
+  description = "Management vCenter SSO administrator@vsphere.local password (8-20 chars)"
+  type        = string
+  sensitive   = true
+}
+
 variable "mgmt_vcenter_vm_size" {
   description = "Management vCenter VM size (tiny, small, medium, large, xlarge)"
   type        = string
@@ -557,6 +563,13 @@ variable "workload_datacenter_name" {
 
 variable "workload_vcenter_root_password" {
   description = "Workload vCenter root password (8-20 chars)"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "workload_vcenter_admin_password" {
+  description = "Workload vCenter SSO administrator password (8-20 chars)"
   type        = string
   sensitive   = true
   default     = null

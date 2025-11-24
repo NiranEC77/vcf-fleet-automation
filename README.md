@@ -43,6 +43,7 @@ Before filling out `terraform.tfvars`, gather:
 - ✅ SDDC Manager endpoint and credentials
 - ✅ All ESXi host FQDNs, IPs, and SSL thumbprints
 - ✅ IP addresses for vCenter instances (management and workload)
+- ✅ Passwords for vCenter (root and SSO administrator@vsphere.local)
 - ✅ IP addresses for NSX Manager nodes (3 per domain)
 - ✅ IP addresses for NSX Edge nodes
 - ✅ IP addresses for VCF services (Automation, Operations, Collector, Fleet Manager)
