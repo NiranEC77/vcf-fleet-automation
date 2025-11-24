@@ -6,17 +6,17 @@
 
 output "management_domain_id" {
   description = "Management domain (VCF instance) ID"
-  value       = vcf_instance.management_domain.id
+  value       = var.deploy_management_domain && var.use_cloud_builder ? vcf_instance.management_domain[0].id : null
 }
 
 output "management_domain_status" {
   description = "Management domain deployment status"
-  value       = vcf_instance.management_domain.status
+  value       = var.deploy_management_domain && var.use_cloud_builder ? vcf_instance.management_domain[0].status : null
 }
 
 output "management_domain_creation_timestamp" {
   description = "Management domain creation timestamp"
-  value       = vcf_instance.management_domain.creation_timestamp
+  value       = var.deploy_management_domain && var.use_cloud_builder ? vcf_instance.management_domain[0].creation_timestamp : null
 }
 
 output "management_vcenter_hostname" {

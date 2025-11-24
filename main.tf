@@ -405,13 +405,15 @@ resource "vcf_domain" "workload" {
 
 # ============================================================================
 # NSX EDGE CLUSTER (Optional)
+# Deploy separately after workload domain is created
+# Uncomment and configure when ready to deploy edge nodes
 # ============================================================================
 
-resource "vcf_edge_cluster" "workload_edges" {
-  count = var.nsx_edge_cluster_enabled ? 1 : 0
-
-  name = var.nsx_edge_cluster_name
-
-  # Edge cluster configuration
-  # Add your edge node specifications here
-}
+# resource "vcf_edge_cluster" "workload_edges" {
+#   count = var.nsx_edge_cluster_enabled ? 1 : 0
+#
+#   name = var.nsx_edge_cluster_name
+#
+#   # Edge cluster configuration
+#   # Add your edge node specifications here
+# }
