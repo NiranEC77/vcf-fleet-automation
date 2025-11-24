@@ -9,6 +9,7 @@
 sddc_manager_host     = "sddc-mgr9.vcf.lab"
 sddc_manager_username = "administrator@vsphere.local"
 sddc_manager_password = "VMware123!VMware123!"
+allow_unverified_tls  = false  # Set to true for self-signed certificates or IP addresses
 
 # ============================================================================
 # Management Domain - Basic Configuration

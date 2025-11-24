@@ -22,6 +22,12 @@ variable "sddc_manager_password" {
   sensitive   = true
 }
 
+variable "allow_unverified_tls" {
+  description = "Allow unverified TLS certificates (set to true for self-signed certs)"
+  type        = bool
+  default     = false
+}
+
 # ============================================================================
 # Management Domain - Basic Configuration
 # ============================================================================
