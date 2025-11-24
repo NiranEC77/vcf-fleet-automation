@@ -12,7 +12,7 @@ use_cloud_builder = true
 
 # Cloud Builder / VCF Installer Configuration (use_cloud_builder = true)
 installer_host     = "10.1.1.191"  # Your Cloud Builder hostname/IP
-installer_username = "admin"
+installer_username = "admin@local"
 installer_password = "VMware123!VMware123!"
 
 # SDDC Manager Configuration (use_cloud_builder = false)
@@ -40,7 +40,7 @@ vcf_version                    = "9.0.1.0"
 # DNS and NTP Configuration
 # ============================================================================
 
-dns_domain               = "vcf.lab"
+dns_domain               = "site-a.vcf.lab"
 dns_nameserver           = "10.1.1.1"
 dns_secondary_nameserver = null
 ntp_servers              = ["10.1.1.1"]
@@ -49,7 +49,7 @@ ntp_servers              = ["10.1.1.1"]
 # Management Domain - vCenter Configuration
 # ============================================================================
 
-mgmt_vcenter_hostname       = "vcsa9-mgmt.vcf.lab"
+mgmt_vcenter_hostname       = "vc-mgmt-a.site-a.vcf.lab"
 mgmt_vcenter_root_password  = "VMware123!VMware123!"
 mgmt_vcenter_vm_size        = "medium"
 mgmt_vcenter_storage_size   = ""
