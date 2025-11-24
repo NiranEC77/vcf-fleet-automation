@@ -5,9 +5,37 @@
 # VCF Provider Configuration
 # ============================================================================
 
-variable "sddc_manager_host" {
-  description = "SDDC Manager / VCF Installer host IP or FQDN"
+variable "use_cloud_builder" {
+  description = "Set to true for initial bootstrap with Cloud Builder, false for managing existing VCF with SDDC Manager"
+  type        = bool
+  default     = true
+}
+
+# Cloud Builder / VCF Installer Configuration (for initial bootstrap)
+variable "installer_host" {
+  description = "Cloud Builder / VCF Installer host IP or FQDN"
   type        = string
+  default     = null
+}
+
+variable "installer_username" {
+  description = "Cloud Builder / VCF Installer username"
+  type        = string
+  default     = "admin"
+}
+
+variable "installer_password" {
+  description = "Cloud Builder / VCF Installer password"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+# SDDC Manager Configuration (for managing existing VCF)
+variable "sddc_manager_host" {
+  description = "SDDC Manager host IP or FQDN (for existing VCF deployments)"
+  type        = string
+  default     = null
 }
 
 variable "sddc_manager_username" {
@@ -20,17 +48,24 @@ variable "sddc_manager_password" {
   description = "SDDC Manager password"
   type        = string
   sensitive   = true
+  default     = null
 }
 
 variable "allow_unverified_tls" {
-  description = "Allow unverified TLS certificates (set to true for self-signed certs)"
+  description = "Allow unverified TLS certificates (set to true for self-signed certs or IP addresses)"
   type        = bool
-  default     = false
+  default     = true
 }
 
 # ============================================================================
 # Management Domain - Basic Configuration
 # ============================================================================
+
+variable "deploy_management_domain" {
+  description = "Deploy management domain (only true for initial bootstrap with Cloud Builder)"
+  type        = bool
+  default     = true
+}
 
 variable "instance_id" {
   description = "SDDC Instance ID (management domain name). 3-20 characters, letters, numbers, and hyphens only"

@@ -1,5 +1,6 @@
-# VCF Infrastructure Deployment
-# Terraform configuration for VMware Cloud Foundation
+# VCF Infrastructure Management
+# For EXISTING VCF deployments (SDDC Manager already running)
+# This configuration manages workload domains, NOT initial bootstrap
 
 terraform {
   required_version = ">= 1.4"
@@ -12,19 +13,29 @@ terraform {
 }
 
 # VCF Provider Configuration
-# Points to the VCF Installer/SDDC Manager endpoint
+# For INITIAL BOOTSTRAP: Connect to Cloud Builder/VCF Installer
+# For EXISTING VCF: Connect to SDDC Manager
 provider "vcf" {
-  sddc_manager_host     = var.sddc_manager_host
-  sddc_manager_username = var.sddc_manager_username
-  sddc_manager_password = var.sddc_manager_password
-  allow_unverified_tls  = var.allow_unverified_tls
+  # Use installer_* parameters for Cloud Builder (initial bootstrap with vcf_instance)
+  installer_host     = var.use_cloud_builder ? var.installer_host : null
+  installer_username = var.use_cloud_builder ? var.installer_username : null
+  installer_password = var.use_cloud_builder ? var.installer_password : null
+  
+  # Use sddc_manager_* parameters for SDDC Manager (managing existing VCF)
+  sddc_manager_host     = var.use_cloud_builder ? null : var.sddc_manager_host
+  sddc_manager_username = var.use_cloud_builder ? null : var.sddc_manager_username
+  sddc_manager_password = var.use_cloud_builder ? null : var.sddc_manager_password
+  
+  allow_unverified_tls = var.allow_unverified_tls
 }
 
 # ============================================================================
-# MANAGEMENT DOMAIN - Bootstrap VCF Instance
+# MANAGEMENT DOMAIN - Bootstrap with Cloud Builder
 # ============================================================================
 
 resource "vcf_instance" "management_domain" {
+  count = var.use_cloud_builder && var.deploy_management_domain ? 1 : 0
+
   instance_id          = var.instance_id
   management_pool_name = var.management_pool_name
 
@@ -35,8 +46,8 @@ resource "vcf_instance" "management_domain" {
 
   # DNS Configuration
   dns {
-    domain               = var.dns_domain
-    name_server          = var.dns_nameserver
+    domain                = var.dns_domain
+    name_server           = var.dns_nameserver
     secondary_name_server = var.dns_secondary_nameserver
   }
 
@@ -54,9 +65,9 @@ resource "vcf_instance" "management_domain" {
 
   # Cluster Configuration
   cluster {
-    cluster_name      = var.mgmt_cluster_name
-    datacenter_name   = var.mgmt_datacenter_name
-    cluster_evc_mode  = var.mgmt_cluster_evc_mode
+    cluster_name     = var.mgmt_cluster_name
+    datacenter_name  = var.mgmt_datacenter_name
+    cluster_evc_mode = var.mgmt_cluster_evc_mode
   }
 
   # vSAN Configuration
@@ -85,16 +96,16 @@ resource "vcf_instance" "management_domain" {
   dynamic "network" {
     for_each = var.mgmt_networks
     content {
-      network_type             = network.value.network_type
-      vlan_id                  = network.value.vlan_id
-      mtu                      = network.value.mtu
-      subnet                   = network.value.subnet
-      subnet_mask              = network.value.subnet_mask
-      gateway                  = network.value.gateway
-      port_group_key           = network.value.port_group_key
-      teaming_policy           = network.value.teaming_policy
-      active_uplinks           = network.value.active_uplinks
-      standby_uplinks          = network.value.standby_uplinks
+      network_type   = network.value.network_type
+      vlan_id        = network.value.vlan_id
+      mtu            = network.value.mtu
+      subnet         = network.value.subnet
+      subnet_mask    = network.value.subnet_mask
+      gateway        = network.value.gateway
+      port_group_key = network.value.port_group_key
+      teaming_policy = network.value.teaming_policy
+      active_uplinks = network.value.active_uplinks
+      standby_uplinks = network.value.standby_uplinks
 
       dynamic "include_ip_address_ranges" {
         for_each = network.value.ip_ranges
@@ -216,8 +227,8 @@ resource "vcf_instance" "management_domain" {
       dynamic "node" {
         for_each = var.vcf_operations_nodes
         content {
-          hostname          = node.value.hostname
-          type              = node.value.type
+          hostname           = node.value.hostname
+          type               = node.value.type
           root_user_password = node.value.root_password
         }
       }
@@ -228,8 +239,8 @@ resource "vcf_instance" "management_domain" {
   dynamic "operations_collector" {
     for_each = var.vcf_operations_collector_enabled ? [1] : []
     content {
-      hostname          = var.vcf_operations_collector_hostname
-      appliance_size    = var.vcf_operations_collector_appliance_size
+      hostname           = var.vcf_operations_collector_hostname
+      appliance_size     = var.vcf_operations_collector_appliance_size
       root_user_password = var.vcf_operations_collector_root_password
     }
   }
@@ -248,9 +259,9 @@ resource "vcf_instance" "management_domain" {
   dynamic "sddc_manager" {
     for_each = var.sddc_manager_config_enabled ? [1] : []
     content {
-      hostname           = var.sddc_manager_hostname
-      root_user_password = var.sddc_manager_root_password
-      ssh_password       = var.sddc_manager_ssh_password
+      hostname            = var.sddc_manager_hostname
+      root_user_password  = var.sddc_manager_root_password
+      ssh_password        = var.sddc_manager_ssh_password
       local_user_password = var.sddc_manager_local_password
     }
   }
@@ -312,11 +323,11 @@ resource "vcf_domain" "workload" {
   dynamic "cluster" {
     for_each = var.workload_clusters
     content {
-      name                    = cluster.value.name
-      cluster_image_id        = cluster.value.cluster_image_id
-      evc_mode                = cluster.value.evc_mode
+      name                      = cluster.value.name
+      cluster_image_id          = cluster.value.cluster_image_id
+      evc_mode                  = cluster.value.evc_mode
       high_availability_enabled = cluster.value.high_availability_enabled
-      geneve_vlan_id          = cluster.value.geneve_vlan_id
+      geneve_vlan_id            = cluster.value.geneve_vlan_id
 
       # vSAN Datastore
       dynamic "vsan_datastore" {
@@ -329,16 +340,16 @@ resource "vcf_domain" "workload" {
         }
       }
 
-      # Hosts in Cluster
+      # Hosts in Cluster (using host IDs from SDDC Manager)
       dynamic "host" {
-        for_each = cluster.value.host_ids
+        for_each = cluster.value.hosts
         content {
-          id = host.value
+          id = host.value.id
 
           dynamic "vmnic" {
-            for_each = cluster.value.vmnic_mappings
+            for_each = host.value.vmnics
             content {
-              id       = vmnic.value.vmnic_id
+              id       = vmnic.value.id
               vds_name = vmnic.value.vds_name
               uplink   = vmnic.value.uplink
             }
@@ -350,15 +361,15 @@ resource "vcf_domain" "workload" {
       dynamic "vds" {
         for_each = cluster.value.vds_configs
         content {
-          name          = vds.value.name
+          name           = vds.value.name
           is_used_by_nsx = vds.value.is_used_by_nsx
 
           dynamic "portgroup" {
             for_each = vds.value.portgroups
             content {
-              name            = portgroup.value.name
-              transport_type  = portgroup.value.transport_type
-              active_uplinks  = portgroup.value.active_uplinks
+              name           = portgroup.value.name
+              transport_type = portgroup.value.transport_type
+              active_uplinks = portgroup.value.active_uplinks
             }
           }
         }
@@ -390,6 +401,17 @@ resource "vcf_domain" "workload" {
       }
     }
   }
+}
 
-  depends_on = [vcf_instance.management_domain]
+# ============================================================================
+# NSX EDGE CLUSTER (Optional)
+# ============================================================================
+
+resource "vcf_edge_cluster" "workload_edges" {
+  count = var.nsx_edge_cluster_enabled ? 1 : 0
+
+  name = var.nsx_edge_cluster_name
+
+  # Edge cluster configuration
+  # Add your edge node specifications here
 }

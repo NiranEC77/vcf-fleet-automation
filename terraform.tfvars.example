@@ -6,17 +6,30 @@
 # VCF Provider Configuration
 # ============================================================================
 
-sddc_manager_host     = "sddc-mgr9.vcf.lab"
+# Set to true for INITIAL BOOTSTRAP with Cloud Builder
+# Set to false for managing EXISTING VCF with SDDC Manager
+use_cloud_builder = true
+
+# Cloud Builder / VCF Installer Configuration (use_cloud_builder = true)
+installer_host     = "holo9-vcfinstaller-usethis.vcf.lab"  # Your Cloud Builder hostname/IP
+installer_username = "admin"
+installer_password = "VMware123!VMware123!"
+
+# SDDC Manager Configuration (use_cloud_builder = false)
+# Only needed after VCF is deployed
+sddc_manager_host     = null  # Set after bootstrap: "sddc-mgr9.vcf.lab"
 sddc_manager_username = "administrator@vsphere.local"
-sddc_manager_password = "VMware123!VMware123!"
-allow_unverified_tls  = false  # Set to true for self-signed certificates or IP addresses
+sddc_manager_password = null  # Set after bootstrap
+
+allow_unverified_tls = true  # Set to true for self-signed certificates or IP addresses
 
 # ============================================================================
 # Management Domain - Basic Configuration
 # ============================================================================
 
-instance_id          = "vcf9"
-management_pool_name = "vcf9-network-pool"
+deploy_management_domain = true  # Deploy management domain (initial bootstrap only)
+instance_id              = "vcf9"
+management_pool_name     = "vcf9-network-pool"
 
 skip_esx_thumbprint_validation = false
 ceip_enabled                   = true
