@@ -126,19 +126,6 @@ mgmt_networks = [
     ip_ranges       = []
   },
   {
-    network_type    = "VM_MANAGEMENT"
-    vlan_id         = 10
-    mtu             = 1500
-    subnet          = "10.0.0.0/24"
-    subnet_mask     = "255.255.255.0"
-    gateway         = "10.0.0.221"
-    port_group_key  = "vcf9-cl01-vds01-pg-vm-mgmt"
-    teaming_policy  = "loadbalance_loadbased"
-    active_uplinks  = ["uplink1", "uplink2"]
-    standby_uplinks = []
-    ip_ranges       = []
-  },
-  {
     network_type    = "VMOTION"
     vlan_id         = 3141
     mtu             = 9000
@@ -184,7 +171,7 @@ mgmt_dvs_configs = [
   {
     name     = "vcf9-cl01-vds01"
     mtu      = 9000
-    networks = ["MANAGEMENT", "VM_MANAGEMENT", "VMOTION", "VSAN"]
+    networks = ["MANAGEMENT", "VMOTION", "VSAN"]
     vmnic_mappings = [
       {
         vmnic  = "vmnic0"
