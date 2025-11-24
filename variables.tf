@@ -78,9 +78,9 @@ variable "management_pool_name" {
 }
 
 variable "skip_esx_thumbprint_validation" {
-  description = "Skip ESXi thumbprint validation"
+  description = "Skip ESXi thumbprint validation (recommended for automation)"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "ceip_enabled" {
@@ -154,9 +154,9 @@ variable "mgmt_vcenter_storage_size" {
 }
 
 variable "mgmt_vcenter_ssl_thumbprint" {
-  description = "Management vCenter SSL thumbprint"
+  description = "Management vCenter SSL thumbprint (optional - leave null for automatic)"
   type        = string
-  default     = null
+  default     = ""
 }
 
 # ============================================================================
@@ -211,13 +211,13 @@ variable "mgmt_vsan_esa_enabled" {
 # ============================================================================
 
 variable "mgmt_esxi_hosts" {
-  description = "Management domain ESXi hosts with IP addresses"
+  description = "Management domain ESXi hosts. SSL/SSH thumbprints are optional - leave empty for automatic validation skip"
   type = list(object({
     hostname       = string
     username       = string
     password       = string
-    ssl_thumbprint = string
-    ssh_thumbprint = string
+    ssl_thumbprint = optional(string, "")
+    ssh_thumbprint = optional(string, "")
   }))
 }
 

@@ -214,11 +214,25 @@ data "vcf_host" "commissioned_hosts" {
 
 Then use the returned UUIDs in your `workload_clusters[].host_ids` list.
 
-### 2. SSL/SSH Thumbprints
+### 2. SSL/SSH Thumbprints (OPTIONAL)
 
-Collect SSL thumbprints from ESXi hosts:
+**Good News!** Thumbprints are **NOT required** for deployment. The configuration uses:
+
+```hcl
+skip_esx_thumbprint_validation = true
+```
+
+This automatically bypasses thumbprint validation, making deployment much easier!
+
+#### Optional: Fetch Thumbprints Manually
+
+If you need thumbprints for documentation or security compliance:
 
 ```bash
+# Use the helper script
+./scripts/get-thumbprints.sh esx9-1.vcf.lab esx9-2.vcf.lab vcsa9-mgmt.vcf.lab
+
+# Or manually:
 # Get SSL thumbprint (SHA256)
 openssl s_client -connect esx-host.example.com:443 </dev/null 2>/dev/null | \
   openssl x509 -fingerprint -sha256 -noout
@@ -227,6 +241,8 @@ openssl s_client -connect esx-host.example.com:443 </dev/null 2>/dev/null | \
 ssh-keyscan esx-host.example.com 2>/dev/null | \
   ssh-keygen -lf - -E sha256
 ```
+
+**Note:** Leave `ssl_thumbprint` and `ssh_thumbprint` empty in your configuration - they're automatically skipped!
 
 ### 3. Deployment Time
 
