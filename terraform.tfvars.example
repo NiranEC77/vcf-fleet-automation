@@ -326,7 +326,9 @@ sddc_manager_local_password = "VMware123!VMware123!"
 # WORKLOAD DOMAIN - Basic Configuration
 # ============================================================================
 
-workload_domain_enabled  = true
+# IMPORTANT: Set to false for initial bootstrap, deploy management domain first
+# After management domain is complete, set to true and configure workload domain
+workload_domain_enabled  = false
 workload_domain_name     = "wld9"
 workload_domain_org_name = null
 
