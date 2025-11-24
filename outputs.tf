@@ -1,103 +1,149 @@
 # VCF Infrastructure Outputs
 
-output "network_pool_id" {
-  description = "ID of the created network pool"
-  value       = vcf_network_pool.main.id
-}
+# ============================================================================
+# Management Domain Outputs
+# ============================================================================
 
 output "management_domain_id" {
-  description = "ID of the management domain"
-  value       = vcf_domain.management.id
+  description = "Management domain (VCF instance) ID"
+  value       = vcf_instance.management_domain.id
 }
 
-output "management_domain_name" {
-  description = "Name of the management domain"
-  value       = vcf_domain.management.name
+output "management_domain_status" {
+  description = "Management domain deployment status"
+  value       = vcf_instance.management_domain.status
 }
+
+output "management_domain_creation_timestamp" {
+  description = "Management domain creation timestamp"
+  value       = vcf_instance.management_domain.creation_timestamp
+}
+
+output "management_vcenter_hostname" {
+  description = "Management vCenter hostname"
+  value       = var.mgmt_vcenter_hostname
+}
+
+output "management_esxi_hosts" {
+  description = "Management domain ESXi hostnames"
+  value       = [for host in var.mgmt_esxi_hosts : host.hostname]
+}
+
+output "management_nsx_vip" {
+  description = "Management NSX VIP FQDN"
+  value       = var.mgmt_nsx_enabled ? var.mgmt_nsx_vip_fqdn : null
+}
+
+output "vcf_automation_hostname" {
+  description = "VCF Automation hostname"
+  value       = var.vcf_automation_enabled ? var.vcf_automation_hostname : null
+}
+
+output "vcf_automation_ips" {
+  description = "VCF Automation IP addresses"
+  value       = var.vcf_automation_enabled ? var.vcf_automation_ip_pool : []
+}
+
+output "vcf_operations_hostname" {
+  description = "VCF Operations hostname"
+  value       = var.vcf_operations_enabled && length(var.vcf_operations_nodes) > 0 ? var.vcf_operations_nodes[0].hostname : null
+}
+
+output "vcf_operations_collector_hostname" {
+  description = "VCF Operations Collector hostname"
+  value       = var.vcf_operations_collector_enabled ? var.vcf_operations_collector_hostname : null
+}
+
+output "vcf_fleet_manager_hostname" {
+  description = "VCF Fleet Manager hostname"
+  value       = var.vcf_fleet_manager_enabled ? var.vcf_fleet_manager_hostname : null
+}
+
+output "sddc_manager_hostname" {
+  description = "SDDC Manager hostname"
+  value       = var.sddc_manager_config_enabled ? var.sddc_manager_hostname : var.sddc_manager_host
+}
+
+# ============================================================================
+# Workload Domain Outputs
+# ============================================================================
 
 output "workload_domain_id" {
-  description = "ID of the workload domain"
-  value       = vcf_domain.workload.id
+  description = "Workload domain ID"
+  value       = var.workload_domain_enabled ? vcf_domain.workload[0].id : null
 }
 
 output "workload_domain_name" {
-  description = "Name of the workload domain"
-  value       = vcf_domain.workload.name
+  description = "Workload domain name"
+  value       = var.workload_domain_enabled ? vcf_domain.workload[0].name : null
 }
 
-output "management_vcenter_ip" {
-  description = "Management vCenter IP address"
-  value       = var.management_vcenter.ip_address
+output "workload_domain_status" {
+  description = "Workload domain status"
+  value       = var.workload_domain_enabled ? vcf_domain.workload[0].status : null
+}
+
+output "workload_domain_type" {
+  description = "Workload domain type"
+  value       = var.workload_domain_enabled ? vcf_domain.workload[0].type : null
 }
 
 output "workload_vcenter_ip" {
   description = "Workload vCenter IP address"
-  value       = var.workload_vcenter.ip_address
+  value       = var.workload_domain_enabled ? var.workload_vcenter_ip : null
 }
 
-output "management_nsx_vip" {
-  description = "Management NSX VIP address"
-  value       = var.management_nsx.vip
+output "workload_vcenter_fqdn" {
+  description = "Workload vCenter FQDN"
+  value       = var.workload_domain_enabled ? var.workload_vcenter_fqdn : null
 }
 
 output "workload_nsx_vip" {
   description = "Workload NSX VIP address"
-  value       = var.workload_nsx.vip
+  value       = var.workload_domain_enabled && var.workload_nsx_enabled ? var.workload_nsx_vip : null
 }
 
-output "management_esxi_hosts" {
-  description = "Management domain ESXi host IP addresses"
-  value       = [for host in var.management_domain_esxi_hosts : host.ip_address]
+output "workload_nsx_vip_fqdn" {
+  description = "Workload NSX VIP FQDN"
+  value       = var.workload_domain_enabled && var.workload_nsx_enabled ? var.workload_nsx_vip_fqdn : null
 }
 
-output "workload_esxi_hosts" {
-  description = "Workload domain ESXi host IP addresses"
-  value       = [for host in var.workload_domain_esxi_hosts : host.ip_address]
+output "workload_nsx_manager_ips" {
+  description = "Workload NSX Manager IP addresses"
+  value       = var.workload_domain_enabled && var.workload_nsx_enabled ? [for mgr in var.workload_nsx_managers : mgr.ip_address] : []
 }
 
-output "nsx_edge_ips" {
-  description = "NSX Edge node IP addresses"
-  value       = [for edge in var.nsx_edge_nodes : edge.ip_address]
+output "workload_cluster_names" {
+  description = "Workload domain cluster names"
+  value       = var.workload_domain_enabled ? [for cluster in var.workload_clusters : cluster.name] : []
 }
 
-output "vcf_automation_ip" {
-  description = "VCF Automation IP address"
-  value       = var.vcf_automation_enabled ? var.vcf_automation_ip : null
+output "workload_sso_domain" {
+  description = "Workload SSO domain name"
+  value       = var.workload_domain_enabled ? var.workload_sso_domain_name : null
 }
 
-output "vcf_operations_ip" {
-  description = "VCF Operations IP address"
-  value       = var.vcf_operations_enabled ? var.vcf_operations_ip : null
-}
+# ============================================================================
+# Summary Output
+# ============================================================================
 
-output "vcf_operations_collector_ip" {
-  description = "VCF Operations Collector IP address"
-  value       = var.vcf_operations_collector_enabled ? var.vcf_operations_collector_ip : null
-}
-
-output "fleet_manager_ip" {
-  description = "Fleet Manager IP address"
-  value       = var.fleet_manager_enabled ? var.fleet_manager_ip : null
-}
-
-output "supervisor_management_ip" {
-  description = "Supervisor management IP address"
-  value       = var.supervisor_enabled ? var.supervisor_management_ip : null
-}
-
-output "supervisor_control_plane_ips" {
-  description = "Supervisor control plane IP addresses"
-  value       = var.supervisor_enabled ? var.supervisor_control_plane_ips : []
-}
-
-output "supervisor_pools" {
-  description = "Supervisor pools configuration"
+output "deployment_summary" {
+  description = "Summary of VCF deployment"
   value = {
-    for name, pool in var.supervisor_pools : name => {
-      name           = pool.name
-      ip_range_start = pool.ip_range_start
-      ip_range_end   = pool.ip_range_end
+    management_domain = {
+      instance_id       = var.instance_id
+      vcenter_hostname  = var.mgmt_vcenter_hostname
+      nsx_vip          = var.mgmt_nsx_enabled ? var.mgmt_nsx_vip_fqdn : null
+      automation_enabled = var.vcf_automation_enabled
+      operations_enabled = var.vcf_operations_enabled
+      fleet_manager_enabled = var.vcf_fleet_manager_enabled
     }
+    workload_domain = var.workload_domain_enabled ? {
+      name             = var.workload_domain_name
+      vcenter_ip       = var.workload_vcenter_ip
+      vcenter_fqdn     = var.workload_vcenter_fqdn
+      nsx_vip          = var.workload_nsx_enabled ? var.workload_nsx_vip : null
+      cluster_count    = length(var.workload_clusters)
+    } : null
   }
 }
-

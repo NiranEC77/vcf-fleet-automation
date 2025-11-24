@@ -1,312 +1,494 @@
 # VCF Infrastructure Configuration Example
-# Copy this file to terraform.tfvars and fill in your values
-
-environment = "dev"
+# Based on VCF 9.x JSON Structure
+# Copy this file to terraform.tfvars and customize with your values
 
 # ============================================================================
-# SDDC Manager Configuration
+# VCF Provider Configuration
 # ============================================================================
 
-sddc_manager_host     = "sddc-manager.example.com"
+sddc_manager_host     = "sddc-mgr9.vcf.lab"
 sddc_manager_username = "administrator@vsphere.local"
-sddc_manager_password = "YourSecurePassword!"
+sddc_manager_password = "VMware123!VMware123!"
 
 # ============================================================================
-# Network Configuration
+# Management Domain - Basic Configuration
 # ============================================================================
 
-management_network = {
-  gateway       = "192.168.10.1"
-  mask          = "255.255.255.0"
-  subnet        = "192.168.10.0"
-  vlan_id       = 100
-  mtu           = 9000
-  ip_pool_start = "192.168.10.50"
-  ip_pool_end   = "192.168.10.100"
-}
+instance_id          = "vcf9"
+management_pool_name = "vcf9-network-pool"
 
-vsan_network = {
-  gateway       = "192.168.11.1"
-  mask          = "255.255.255.0"
-  subnet        = "192.168.11.0"
-  vlan_id       = 101
-  mtu           = 9000
-  ip_pool_start = "192.168.11.50"
-  ip_pool_end   = "192.168.11.100"
-}
-
-vmotion_network = {
-  gateway       = "192.168.12.1"
-  mask          = "255.255.255.0"
-  subnet        = "192.168.12.0"
-  vlan_id       = 102
-  mtu           = 9000
-  ip_pool_start = "192.168.12.50"
-  ip_pool_end   = "192.168.12.100"
-}
+skip_esx_thumbprint_validation = false
+ceip_enabled                   = true
+fips_enabled                   = false
+vcf_version                    = "9.0.1.0"
 
 # ============================================================================
-# Management Domain - ESXi Hosts
+# DNS and NTP Configuration
 # ============================================================================
 
-management_domain_esxi_hosts = [
-  {
-    fqdn         = "esx-mgmt-01.example.com"
-    ip_address   = "192.168.10.11"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  },
-  {
-    fqdn         = "esx-mgmt-02.example.com"
-    ip_address   = "192.168.10.12"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  },
-  {
-    fqdn         = "esx-mgmt-03.example.com"
-    ip_address   = "192.168.10.13"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  }
-]
-
-management_domain_vsan_ftol  = 1
-management_domain_geneve_vlan = 2
-
-# ============================================================================
-# Workload Domain - ESXi Hosts
-# ============================================================================
-
-workload_domain_esxi_hosts = [
-  {
-    fqdn         = "esx-wkld-01.example.com"
-    ip_address   = "192.168.20.11"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  },
-  {
-    fqdn         = "esx-wkld-02.example.com"
-    ip_address   = "192.168.20.12"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  },
-  {
-    fqdn         = "esx-wkld-03.example.com"
-    ip_address   = "192.168.20.13"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  },
-  {
-    fqdn         = "esx-wkld-04.example.com"
-    ip_address   = "192.168.20.14"
-    username     = "root"
-    password     = "YourESXiPassword!"
-    storage_type = "VSAN"
-  }
-]
-
-workload_domain_vsan_ftol  = 1
-workload_domain_geneve_vlan = 3
+dns_domain               = "vcf.lab"
+dns_nameserver           = "10.0.0.201"
+dns_secondary_nameserver = null
+ntp_servers              = ["10.0.0.221"]
 
 # ============================================================================
 # Management Domain - vCenter Configuration
 # ============================================================================
 
-management_vcenter = {
-  name            = "vcenter-mgmt"
-  datacenter_name = "mgmt-datacenter"
-  root_password   = "YourVCenterPassword!"
-  vm_size         = "medium"
-  storage_size    = "lstorage"
-  ip_address      = "192.168.10.15"
-  subnet_mask     = "255.255.255.0"
-  gateway         = "192.168.10.1"
-  fqdn            = "vcenter-mgmt.example.com"
-}
+mgmt_vcenter_hostname      = "vcsa9-mgmt.vcf.lab"
+mgmt_vcenter_root_password = "VMware123!VMware123!"
+mgmt_vcenter_vm_size       = "medium"
+mgmt_vcenter_storage_size  = "lstorage"
+mgmt_vcenter_ssl_thumbprint = null
 
 # ============================================================================
-# Workload Domain - vCenter Configuration
+# Management Domain - Cluster Configuration
 # ============================================================================
 
-workload_vcenter = {
-  name            = "vcenter-wkld"
-  datacenter_name = "wkld-datacenter"
-  root_password   = "YourVCenterPassword!"
-  vm_size         = "medium"
-  storage_size    = "lstorage"
-  ip_address      = "192.168.20.15"
-  subnet_mask     = "255.255.255.0"
-  gateway         = "192.168.20.1"
-  fqdn            = "vcenter-wkld.example.com"
-}
+mgmt_cluster_name    = "vcf9-cl01"
+mgmt_datacenter_name = "vcf9-dc01"
+mgmt_cluster_evc_mode = null
+
+# ============================================================================
+# Management Domain - vSAN Configuration
+# ============================================================================
+
+mgmt_vsan_datastore_name       = "vcf9-cl01-ds-vsan01"
+mgmt_vsan_failures_to_tolerate = 1
+mgmt_vsan_dedup_enabled        = true
+mgmt_vsan_esa_enabled          = false
+
+# ============================================================================
+# Management Domain - ESXi Hosts
+# ============================================================================
+
+mgmt_esxi_hosts = [
+  {
+    hostname       = "esx9-1.vcf.lab"
+    username       = "root"
+    password       = "VMware123!VMware123!"
+    ssl_thumbprint = "CC:BD:2A:3D:C2:98:AA:5E:D3:C1:2E:FA:44:59:2A:8D:44:14:AA:C2:DF:18:E8:C9:97:15:65:66:77:C0:13:E0"
+    ssh_thumbprint = ""
+  },
+  {
+    hostname       = "esx9-2.vcf.lab"
+    username       = "root"
+    password       = "VMware123!VMware123!"
+    ssl_thumbprint = "EA:06:A2:6B:94:40:DA:A2:A5:B3:C7:8C:E2:AF:C9:3C:78:99:2F:E8:EF:BD:E5:B4:81:D6:C0:CF:5E:39:F4:5D"
+    ssh_thumbprint = ""
+  },
+  {
+    hostname       = "esx9-3.vcf.lab"
+    username       = "root"
+    password       = "VMware123!VMware123!"
+    ssl_thumbprint = "06:CB:56:2E:80:71:35:7F:9E:54:2C:6C:71:26:3B:CD:6E:B5:D1:E7:15:E6:C3:0C:53:52:77:39:55:57:C8:53"
+    ssh_thumbprint = ""
+  },
+  {
+    hostname       = "esx9-4.vcf.lab"
+    username       = "root"
+    password       = "VMware123!VMware123!"
+    ssl_thumbprint = "DC:0C:18:16:93:1E:16:10:DC:F6:97:6D:AF:61:83:9C:7E:7A:0B:D5:61:01:AE:2F:D9:E9:34:B7:B1:CC:94:38"
+    ssh_thumbprint = ""
+  }
+]
+
+# ============================================================================
+# Management Domain - Network Configuration
+# ============================================================================
+
+mgmt_networks = [
+  {
+    network_type    = "MANAGEMENT"
+    vlan_id         = 3139
+    mtu             = 1500
+    subnet          = "10.0.0.0/24"
+    subnet_mask     = "255.255.255.0"
+    gateway         = "10.0.0.221"
+    port_group_key  = "vcf9-cl01-vds01-pg-esx-mgmt"
+    teaming_policy  = "loadbalance_loadbased"
+    active_uplinks  = ["uplink1", "uplink2"]
+    standby_uplinks = []
+    ip_ranges       = []
+  },
+  {
+    network_type    = "VM_MANAGEMENT"
+    vlan_id         = 3139
+    mtu             = 1500
+    subnet          = "10.0.0.0/24"
+    subnet_mask     = "255.255.255.0"
+    gateway         = "10.0.0.221"
+    port_group_key  = "vcf9-cl01-vds01-pg-vm-mgmt"
+    teaming_policy  = "loadbalance_loadbased"
+    active_uplinks  = ["uplink1", "uplink2"]
+    standby_uplinks = []
+    ip_ranges       = []
+  },
+  {
+    network_type    = "VMOTION"
+    vlan_id         = 3141
+    mtu             = 9000
+    subnet          = "10.0.4.0/24"
+    subnet_mask     = "255.255.255.0"
+    gateway         = "10.0.4.253"
+    port_group_key  = "vcf9-cl01-vds01-pg-vmotion"
+    teaming_policy  = "loadbalance_loadbased"
+    active_uplinks  = ["uplink1", "uplink2"]
+    standby_uplinks = []
+    ip_ranges = [
+      {
+        start = "10.0.4.91"
+        end   = "10.0.4.99"
+      }
+    ]
+  },
+  {
+    network_type    = "VSAN"
+    vlan_id         = 3140
+    mtu             = 9000
+    subnet          = "10.0.8.0/24"
+    subnet_mask     = "255.255.255.0"
+    gateway         = "10.0.8.253"
+    port_group_key  = "vcf9-cl01-vds01-pg-vsan"
+    teaming_policy  = "loadbalance_loadbased"
+    active_uplinks  = ["uplink1", "uplink2"]
+    standby_uplinks = []
+    ip_ranges = [
+      {
+        start = "10.0.8.91"
+        end   = "10.0.8.99"
+      }
+    ]
+  }
+]
+
+# ============================================================================
+# Management Domain - DVS Configuration
+# ============================================================================
+
+mgmt_dvs_configs = [
+  {
+    name     = "vcf9-cl01-vds01"
+    mtu      = 9000
+    networks = ["MANAGEMENT", "VM_MANAGEMENT", "VMOTION", "VSAN"]
+    vmnic_mappings = [
+      {
+        vmnic  = "vmnic0"
+        uplink = "uplink1"
+      },
+      {
+        vmnic  = "vmnic1"
+        uplink = "uplink2"
+      }
+    ]
+    nsx_switch_config = null
+    nsx_teamings      = []
+  },
+  {
+    name     = "vcf9-cl01-vds02"
+    mtu      = 9000
+    networks = []
+    vmnic_mappings = [
+      {
+        vmnic  = "vmnic2"
+        uplink = "uplink1"
+      },
+      {
+        vmnic  = "vmnic3"
+        uplink = "uplink2"
+      }
+    ]
+    nsx_switch_config = {
+      transport_zones = [
+        {
+          transport_type = "OVERLAY"
+          name           = "VCF-Created-Overlay-Zone"
+        }
+      ]
+    }
+    nsx_teamings = [
+      {
+        policy          = "LOADBALANCE_SRCID"
+        active_uplinks  = ["uplink1", "uplink2"]
+        standby_uplinks = []
+      }
+    ]
+  }
+]
 
 # ============================================================================
 # Management Domain - NSX Configuration
 # ============================================================================
 
-management_nsx = {
-  vip            = "192.168.10.20"
-  vip_fqdn       = "nsx-mgmt.example.com"
-  admin_password = "YourNSXPassword!"
-  form_factor    = "small"
+mgmt_nsx_enabled        = true
+mgmt_nsx_manager_size   = "medium"
+mgmt_nsx_root_password  = "VMware123!VMware123!"
+mgmt_nsx_admin_password = "VMware123!VMware123!"
+mgmt_nsx_audit_password = "VMware123!VMware123!"
+mgmt_nsx_vip_fqdn       = "nsx9-mgmt.vcf.lab"
+mgmt_nsx_transport_vlan_id = 3138
+
+mgmt_nsx_managers = [
+  {
+    hostname = "nsx9-mgmt-appliance1.vcf.lab"
+  }
+]
+
+# NSX IP Pool for TEP (Tunnel Endpoint)
+mgmt_nsx_ip_pool = {
+  name        = "vlan-18-tep-network"
+  description = "TEP IP Pool for Management Domain"
+  subnets = [
+    {
+      cidr    = "10.2.2.0/24"
+      gateway = "10.2.2.1"
+      ip_ranges = [
+        {
+          start = "10.2.2.91"
+          end   = "10.2.2.99"
+        }
+      ]
+    }
+  ]
 }
-
-management_nsx_managers = [
-  {
-    name        = "nsx-mgmt-01"
-    ip_address  = "192.168.10.21"
-    fqdn        = "nsx-mgmt-01.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.10.1"
-  },
-  {
-    name        = "nsx-mgmt-02"
-    ip_address  = "192.168.10.22"
-    fqdn        = "nsx-mgmt-02.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.10.1"
-  },
-  {
-    name        = "nsx-mgmt-03"
-    ip_address  = "192.168.10.23"
-    fqdn        = "nsx-mgmt-03.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.10.1"
-  }
-]
-
-# ============================================================================
-# Workload Domain - NSX Configuration
-# ============================================================================
-
-workload_nsx = {
-  vip            = "192.168.20.20"
-  vip_fqdn       = "nsx-wkld.example.com"
-  admin_password = "YourNSXPassword!"
-  form_factor    = "small"
-}
-
-workload_nsx_managers = [
-  {
-    name        = "nsx-wkld-01"
-    ip_address  = "192.168.20.21"
-    fqdn        = "nsx-wkld-01.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.20.1"
-  },
-  {
-    name        = "nsx-wkld-02"
-    ip_address  = "192.168.20.22"
-    fqdn        = "nsx-wkld-02.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.20.1"
-  },
-  {
-    name        = "nsx-wkld-03"
-    ip_address  = "192.168.20.23"
-    fqdn        = "nsx-wkld-03.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.20.1"
-  }
-]
-
-# ============================================================================
-# NSX Edge Nodes Configuration
-# ============================================================================
-
-nsx_edge_nodes = [
-  {
-    name        = "nsx-edge-01"
-    ip_address  = "192.168.20.31"
-    fqdn        = "nsx-edge-01.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.20.1"
-  },
-  {
-    name        = "nsx-edge-02"
-    ip_address  = "192.168.20.32"
-    fqdn        = "nsx-edge-02.example.com"
-    subnet_mask = "255.255.255.0"
-    gateway     = "192.168.20.1"
-  }
-]
 
 # ============================================================================
 # VCF Automation Configuration
 # ============================================================================
 
-vcf_automation_enabled     = true
-vcf_automation_ip          = "192.168.10.41"
-vcf_automation_fqdn        = "vcf-automation.example.com"
-vcf_automation_subnet_mask = "255.255.255.0"
-vcf_automation_gateway     = "192.168.10.1"
+vcf_automation_enabled             = true
+vcf_automation_hostname            = "vcf-a.vcf.lab"
+vcf_automation_ip_pool             = ["10.0.0.50", "10.0.0.51"]
+vcf_automation_node_prefix         = "vcfa-appliance"
+vcf_automation_internal_cluster_cidr = "198.18.0.0/15"
+vcf_automation_admin_password      = "VMware123!VMware123!"
 
 # ============================================================================
 # VCF Operations Configuration
 # ============================================================================
 
-vcf_operations_enabled     = true
-vcf_operations_ip          = "192.168.10.42"
-vcf_operations_fqdn        = "vcf-operations.example.com"
-vcf_operations_subnet_mask = "255.255.255.0"
-vcf_operations_gateway     = "192.168.10.1"
+vcf_operations_enabled           = true
+vcf_operations_appliance_size    = "medium"
+vcf_operations_admin_password    = "VMware123!VMware123!"
+vcf_operations_load_balancer_fqdn = null
+
+vcf_operations_nodes = [
+  {
+    hostname      = "vcops9.vcf.lab"
+    type          = "master"
+    root_password = "VMware123!VMware123!"
+  }
+]
 
 # ============================================================================
 # VCF Operations Collector Configuration
 # ============================================================================
 
-vcf_operations_collector_enabled     = true
-vcf_operations_collector_ip          = "192.168.10.43"
-vcf_operations_collector_fqdn        = "vcf-ops-collector.example.com"
-vcf_operations_collector_subnet_mask = "255.255.255.0"
-vcf_operations_collector_gateway     = "192.168.10.1"
+vcf_operations_collector_enabled       = true
+vcf_operations_collector_hostname      = "vcops-appliance.vcf.lab"
+vcf_operations_collector_appliance_size = "small"
+vcf_operations_collector_root_password = "VMware123!VMware123!"
 
 # ============================================================================
-# Fleet Manager Configuration
+# VCF Fleet Manager Configuration
 # ============================================================================
 
-fleet_manager_enabled     = true
-fleet_manager_ip          = "192.168.10.44"
-fleet_manager_fqdn        = "fleet-manager.example.com"
-fleet_manager_subnet_mask = "255.255.255.0"
-fleet_manager_gateway     = "192.168.10.1"
+vcf_fleet_manager_enabled        = true
+vcf_fleet_manager_hostname       = "fleet9.vcf.lab"
+vcf_fleet_manager_root_password  = "VMware123!VMware123!"
+vcf_fleet_manager_admin_password = "VMware123!VMware123!"
 
 # ============================================================================
-# Supervisor Configuration
+# SDDC Manager Additional Configuration (Optional)
 # ============================================================================
 
-supervisor_enabled         = true
-supervisor_management_ip   = "192.168.20.50"
-supervisor_control_plane_ips = ["192.168.20.51", "192.168.20.52", "192.168.20.53"]
-supervisor_subnet_mask     = "255.255.255.0"
-supervisor_gateway         = "192.168.20.1"
-supervisor_dns_servers     = ["192.168.10.2", "192.168.10.3"]
-supervisor_ntp_servers     = ["time.vmware.com"]
+sddc_manager_config_enabled = true
+sddc_manager_hostname       = "sddc-mgr9.vcf.lab"
+sddc_manager_root_password  = "VMware123!VMware123!"
+sddc_manager_ssh_password   = "VMware123!VMware123!"
+sddc_manager_local_password = "VMware123!VMware123!"
 
 # ============================================================================
-# Supervisor Pools Configuration
+# WORKLOAD DOMAIN - Basic Configuration
 # ============================================================================
 
-supervisor_pools = {
-  pool1 = {
-    name           = "supervisor-pool-1"
-    ip_range_start = "192.168.20.60"
-    ip_range_end   = "192.168.20.80"
-    subnet_mask    = "255.255.255.0"
-    gateway        = "192.168.20.1"
-  },
-  pool2 = {
-    name           = "supervisor-pool-2"
-    ip_range_start = "192.168.20.81"
-    ip_range_end   = "192.168.20.100"
-    subnet_mask    = "255.255.255.0"
-    gateway        = "192.168.20.1"
+workload_domain_enabled  = true
+workload_domain_name     = "wld9"
+workload_domain_org_name = null
+
+# ============================================================================
+# Workload Domain - vCenter Configuration
+# ============================================================================
+
+workload_vcenter_name         = "vcsa9-wld"
+workload_datacenter_name      = "wld9-DC"
+workload_vcenter_root_password = "VMware123!VMware123!"
+workload_vcenter_vm_size      = "medium"
+workload_vcenter_storage_size = "lstorage"
+workload_vcenter_ip           = "10.0.0.25"
+workload_vcenter_subnet_mask  = "255.255.255.0"
+workload_vcenter_gateway      = "10.0.0.221"
+workload_vcenter_fqdn         = "vcsa9-wld.vcf.lab"
+
+# ============================================================================
+# Workload Domain - SSO Configuration
+# ============================================================================
+
+workload_sso_domain_name     = "vcf9-wld.local"
+workload_sso_domain_password = "VMware123!VMware123!"
+
+# ============================================================================
+# Workload Domain - NSX Configuration
+# ============================================================================
+
+workload_nsx_enabled        = true
+workload_nsx_admin_password = "VMware123!VMware123!"
+workload_nsx_audit_password = "VMware123!VMware123!"
+workload_nsx_vip            = "10.0.0.30"
+workload_nsx_vip_fqdn       = "nsx9-wld.vcf.lab"
+workload_nsx_form_factor    = "large"
+
+workload_nsx_managers = [
+  {
+    name        = "nsx9-wldappliance1"
+    ip_address  = "10.0.0.31"
+    fqdn        = "nsx9-wldappliance1.vcf.lab"
+    subnet_mask = "255.255.255.0"
+    gateway     = "10.0.0.221"
   }
-}
+]
 
+# ============================================================================
+# Workload Domain - Cluster Configuration
+# ============================================================================
+
+workload_clusters = [
+  {
+    name                      = "cls-wld9"
+    cluster_image_id          = "cf715e55-706a-48ab-8838-c6793932811a"
+    evc_mode                  = null
+    high_availability_enabled = true
+    geneve_vlan_id            = 3138
+    
+    vsan_datastore = {
+      datastore_name                = "cls-wld9-vsan01"
+      failures_to_tolerate          = 1
+      dedup_and_compression_enabled = true
+      esa_enabled                   = false
+    }
+    
+    # Host IDs from VCF (these are UUIDs obtained after hosts are commissioned)
+    host_ids = [
+      "e2d0419c-fe99-4a50-92e5-2918e1dfcb3f",
+      "1a2ac975-4166-4645-ab93-a5b8c4e3c7cb",
+      "061db7f3-e284-4a2f-a99a-ef19179727e8"
+    ]
+    
+    vmnic_mappings = [
+      {
+        vmnic_id = "vmnic0"
+        vds_name = "cls-wld9-vds-01"
+        uplink   = "uplink1"
+      },
+      {
+        vmnic_id = "vmnic1"
+        vds_name = "cls-wld9-vds-01"
+        uplink   = "uplink2"
+      },
+      {
+        vmnic_id = "vmnic2"
+        vds_name = "cls-wld9-vds-02"
+        uplink   = "uplink1"
+      },
+      {
+        vmnic_id = "vmnic3"
+        vds_name = "cls-wld9-vds-02"
+        uplink   = "uplink2"
+      }
+    ]
+    
+    vds_configs = [
+      {
+        name          = "cls-wld9-vds-01"
+        is_used_by_nsx = false
+        portgroups = [
+          {
+            name           = "cls-wld9-vds-01-pg-mgmt"
+            transport_type = "MANAGEMENT"
+            active_uplinks = ["uplink1", "uplink2"]
+          },
+          {
+            name           = "cls-wld9-vds-01-pg-vmotion"
+            transport_type = "VMOTION"
+            active_uplinks = ["uplink1", "uplink2"]
+          },
+          {
+            name           = "cls-wld9-vds-01-pg-vsan"
+            transport_type = "VSAN"
+            active_uplinks = ["uplink1", "uplink2"]
+          }
+        ]
+      },
+      {
+        name          = "cls-wld9-vds-02"
+        is_used_by_nsx = true
+        portgroups    = []
+      }
+    ]
+    
+    # IP Pool for NSX TEP in workload domain
+    ip_address_pool = {
+      name        = "cls-wld9-tep-pool"
+      description = "TEP IP Pool for Workload Cluster"
+      subnets = [
+        {
+          cidr    = "10.2.2.0/24"
+          gateway = "10.2.2.1"
+          ip_ranges = [
+            {
+              start = "10.2.2.110"
+              end   = "10.2.2.130"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
+
+# ============================================================================
+# Additional Configuration Notes
+# ============================================================================
+
+# 1. Supervisor Configuration:
+#    Supervisor is configured via the supervisorActivationSpec in the workload
+#    cluster configuration. This is typically done after the workload domain
+#    is created. You would add supervisor configuration to the cluster spec.
+#
+#    Example supervisor IPs from your JSON:
+#    - Control Plane IPs: 10.0.0.10 - 10.0.0.15
+#    - Service CIDR: 172.12.11.0/24
+#    - Private Transit Network CIDR: 173.0.0.0/16
+#    - Private CIDR: 174.0.0.0/16
+
+# 2. NSX Edge Nodes:
+#    NSX Edge nodes are typically deployed separately using vcf_edge_cluster
+#    resource after the workload domain is created.
+#
+#    Example edge configuration would be added as a separate resource.
+
+# 3. Supervisor Pools:
+#    Supervisor pools are configured within the supervisor namespace and 
+#    are typically managed through the vSphere/NSX interface or separate
+#    Terraform resources after supervisor activation.
+
+# 4. License Keys:
+#    Set deployWithoutLicenseKeys = true in your configuration, or provide
+#    license keys for vSphere, vSAN, and NSX components.
+
+# 5. Host IDs:
+#    The host_ids in workload_clusters must be UUIDs from commissioned hosts.
+#    You can get these by:
+#    - Using the VCF API: GET /v1/hosts
+#    - Using Terraform data sources: data "vcf_host"
+#    - From the SDDC Manager UI after commissioning hosts

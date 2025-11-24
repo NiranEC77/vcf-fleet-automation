@@ -1,17 +1,12 @@
 # VCF Infrastructure Variables
-
-variable "environment" {
-  description = "Environment name (dev, staging, prod)"
-  type        = string
-  default     = "dev"
-}
+# Based on VCF Terraform Provider: https://registry.terraform.io/providers/vmware/vcf/latest/docs
 
 # ============================================================================
-# SDDC Manager Configuration
+# VCF Provider Configuration
 # ============================================================================
 
 variable "sddc_manager_host" {
-  description = "SDDC Manager host IP or FQDN"
+  description = "SDDC Manager / VCF Installer host IP or FQDN"
   type        = string
 }
 
@@ -28,349 +23,281 @@ variable "sddc_manager_password" {
 }
 
 # ============================================================================
-# Network Configuration
+# Management Domain - Basic Configuration
 # ============================================================================
 
-variable "management_network" {
-  description = "Management network configuration"
-  type = object({
-    gateway       = string
-    mask          = string
-    subnet        = string
-    vlan_id       = number
-    mtu           = number
-    ip_pool_start = string
-    ip_pool_end   = string
-  })
-  default = {
-    gateway       = "192.168.10.1"
-    mask          = "255.255.255.0"
-    subnet        = "192.168.10.0"
-    vlan_id       = 100
-    mtu           = 9000
-    ip_pool_start = "192.168.10.50"
-    ip_pool_end   = "192.168.10.100"
-  }
+variable "instance_id" {
+  description = "SDDC Instance ID (management domain name). 3-20 characters, letters, numbers, and hyphens only"
+  type        = string
 }
 
-variable "vsan_network" {
-  description = "vSAN network configuration"
-  type = object({
-    gateway       = string
-    mask          = string
-    subnet        = string
-    vlan_id       = number
-    mtu           = number
-    ip_pool_start = string
-    ip_pool_end   = string
-  })
-  default = {
-    gateway       = "192.168.11.1"
-    mask          = "255.255.255.0"
-    subnet        = "192.168.11.0"
-    vlan_id       = 101
-    mtu           = 9000
-    ip_pool_start = "192.168.11.50"
-    ip_pool_end   = "192.168.11.100"
-  }
+variable "management_pool_name" {
+  description = "Management network pool name"
+  type        = string
 }
 
-variable "vmotion_network" {
-  description = "vMotion network configuration"
-  type = object({
-    gateway       = string
-    mask          = string
-    subnet        = string
-    vlan_id       = number
-    mtu           = number
-    ip_pool_start = string
-    ip_pool_end   = string
-  })
-  default = {
-    gateway       = "192.168.12.1"
-    mask          = "255.255.255.0"
-    subnet        = "192.168.12.0"
-    vlan_id       = 102
-    mtu           = 9000
-    ip_pool_start = "192.168.12.50"
-    ip_pool_end   = "192.168.12.100"
-  }
+variable "skip_esx_thumbprint_validation" {
+  description = "Skip ESXi thumbprint validation"
+  type        = bool
+  default     = false
+}
+
+variable "ceip_enabled" {
+  description = "Enable VCF Customer Experience Improvement Program"
+  type        = bool
+  default     = true
+}
+
+variable "fips_enabled" {
+  description = "Enable Federal Information Processing Standards"
+  type        = bool
+  default     = false
+}
+
+variable "vcf_version" {
+  description = "VCF version (e.g., 9.0.1.0)"
+  type        = string
+  default     = null
 }
 
 # ============================================================================
-# Management Domain - ESXi Hosts
+# DNS and NTP Configuration
 # ============================================================================
 
-variable "management_domain_esxi_hosts" {
-  description = "ESXi hosts for management domain with IP addresses"
-  type = list(object({
-    fqdn         = string
-    ip_address   = string
-    username     = string
-    password     = string
-    storage_type = string
-  }))
-  default = [
-    {
-      fqdn         = "esx-mgmt-01.example.com"
-      ip_address   = "192.168.10.11"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    },
-    {
-      fqdn         = "esx-mgmt-02.example.com"
-      ip_address   = "192.168.10.12"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    },
-    {
-      fqdn         = "esx-mgmt-03.example.com"
-      ip_address   = "192.168.10.13"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    }
-  ]
+variable "dns_domain" {
+  description = "DNS domain (e.g., vcf.lab)"
+  type        = string
 }
 
-variable "management_domain_vsan_ftol" {
-  description = "vSAN failures to tolerate for management domain"
-  type        = number
-  default     = 1
+variable "dns_nameserver" {
+  description = "Primary DNS nameserver IP"
+  type        = string
 }
 
-variable "management_domain_geneve_vlan" {
-  description = "Geneve VLAN ID for management domain"
-  type        = number
-  default     = 2
+variable "dns_secondary_nameserver" {
+  description = "Secondary DNS nameserver IP"
+  type        = string
+  default     = null
 }
 
-# ============================================================================
-# Workload Domain - ESXi Hosts
-# ============================================================================
-
-variable "workload_domain_esxi_hosts" {
-  description = "ESXi hosts for workload domain with IP addresses"
-  type = list(object({
-    fqdn         = string
-    ip_address   = string
-    username     = string
-    password     = string
-    storage_type = string
-  }))
-  default = [
-    {
-      fqdn         = "esx-wkld-01.example.com"
-      ip_address   = "192.168.20.11"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    },
-    {
-      fqdn         = "esx-wkld-02.example.com"
-      ip_address   = "192.168.20.12"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    },
-    {
-      fqdn         = "esx-wkld-03.example.com"
-      ip_address   = "192.168.20.13"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    },
-    {
-      fqdn         = "esx-wkld-04.example.com"
-      ip_address   = "192.168.20.14"
-      username     = "root"
-      password     = "changeme"
-      storage_type = "VSAN"
-    }
-  ]
-}
-
-variable "workload_domain_vsan_ftol" {
-  description = "vSAN failures to tolerate for workload domain"
-  type        = number
-  default     = 1
-}
-
-variable "workload_domain_geneve_vlan" {
-  description = "Geneve VLAN ID for workload domain"
-  type        = number
-  default     = 3
+variable "ntp_servers" {
+  description = "List of NTP servers"
+  type        = list(string)
 }
 
 # ============================================================================
 # Management Domain - vCenter Configuration
 # ============================================================================
 
-variable "management_vcenter" {
-  description = "Management domain vCenter configuration"
-  type = object({
-    name            = string
-    datacenter_name = string
-    root_password   = string
-    vm_size         = string
-    storage_size    = string
-    ip_address      = string
-    subnet_mask     = string
-    gateway         = string
-    fqdn            = string
-  })
-  sensitive = true
+variable "mgmt_vcenter_hostname" {
+  description = "Management vCenter hostname"
+  type        = string
+}
+
+variable "mgmt_vcenter_root_password" {
+  description = "Management vCenter root password (8-20 chars)"
+  type        = string
+  sensitive   = true
+}
+
+variable "mgmt_vcenter_vm_size" {
+  description = "Management vCenter VM size (tiny, small, medium, large, xlarge)"
+  type        = string
+  default     = "medium"
+}
+
+variable "mgmt_vcenter_storage_size" {
+  description = "Management vCenter storage size (lstorage, xlstorage)"
+  type        = string
+  default     = "lstorage"
+}
+
+variable "mgmt_vcenter_ssl_thumbprint" {
+  description = "Management vCenter SSL thumbprint"
+  type        = string
+  default     = null
 }
 
 # ============================================================================
-# Workload Domain - vCenter Configuration
+# Management Domain - Cluster Configuration
 # ============================================================================
 
-variable "workload_vcenter" {
-  description = "Workload domain vCenter configuration"
-  type = object({
-    name            = string
-    datacenter_name = string
-    root_password   = string
-    vm_size         = string
-    storage_size    = string
-    ip_address      = string
+variable "mgmt_cluster_name" {
+  description = "Management cluster name"
+  type        = string
+}
+
+variable "mgmt_datacenter_name" {
+  description = "Management datacenter name"
+  type        = string
+}
+
+variable "mgmt_cluster_evc_mode" {
+  description = "Management cluster EVC mode"
+  type        = string
+  default     = null
+}
+
+# ============================================================================
+# Management Domain - vSAN Configuration
+# ============================================================================
+
+variable "mgmt_vsan_datastore_name" {
+  description = "Management vSAN datastore name"
+  type        = string
+}
+
+variable "mgmt_vsan_failures_to_tolerate" {
+  description = "Management vSAN failures to tolerate (1 or 2)"
+  type        = number
+  default     = 1
+}
+
+variable "mgmt_vsan_dedup_enabled" {
+  description = "Enable vSAN deduplication and compression"
+  type        = bool
+  default     = true
+}
+
+variable "mgmt_vsan_esa_enabled" {
+  description = "Enable vSAN ESA"
+  type        = bool
+  default     = false
+}
+
+# ============================================================================
+# Management Domain - ESXi Hosts
+# ============================================================================
+
+variable "mgmt_esxi_hosts" {
+  description = "Management domain ESXi hosts with IP addresses"
+  type = list(object({
+    hostname       = string
+    username       = string
+    password       = string
+    ssl_thumbprint = string
+    ssh_thumbprint = string
+  }))
+}
+
+# ============================================================================
+# Management Domain - Network Configuration
+# ============================================================================
+
+variable "mgmt_networks" {
+  description = "Management domain network specifications"
+  type = list(object({
+    network_type    = string
+    vlan_id         = number
+    mtu             = number
+    subnet          = string
     subnet_mask     = string
     gateway         = string
-    fqdn            = string
-  })
-  sensitive = true
+    port_group_key  = string
+    teaming_policy  = string
+    active_uplinks  = list(string)
+    standby_uplinks = list(string)
+    ip_ranges = list(object({
+      start = string
+      end   = string
+    }))
+  }))
+}
+
+# ============================================================================
+# Management Domain - DVS Configuration
+# ============================================================================
+
+variable "mgmt_dvs_configs" {
+  description = "Management domain DVS configurations"
+  type = list(object({
+    name     = string
+    mtu      = number
+    networks = list(string)
+    vmnic_mappings = list(object({
+      vmnic  = string
+      uplink = string
+    }))
+    nsx_switch_config = object({
+      transport_zones = list(object({
+        transport_type = string
+        name           = string
+      }))
+    })
+    nsx_teamings = list(object({
+      policy          = string
+      active_uplinks  = list(string)
+      standby_uplinks = list(string)
+    }))
+  }))
 }
 
 # ============================================================================
 # Management Domain - NSX Configuration
 # ============================================================================
 
-variable "management_nsx" {
-  description = "Management domain NSX configuration"
+variable "mgmt_nsx_enabled" {
+  description = "Enable NSX for management domain"
+  type        = bool
+  default     = true
+}
+
+variable "mgmt_nsx_manager_size" {
+  description = "NSX Manager size (medium, large)"
+  type        = string
+  default     = "medium"
+}
+
+variable "mgmt_nsx_root_password" {
+  description = "NSX Manager root password"
+  type        = string
+  sensitive   = true
+}
+
+variable "mgmt_nsx_admin_password" {
+  description = "NSX Manager admin password"
+  type        = string
+  sensitive   = true
+}
+
+variable "mgmt_nsx_audit_password" {
+  description = "NSX Manager audit password"
+  type        = string
+  sensitive   = true
+}
+
+variable "mgmt_nsx_vip_fqdn" {
+  description = "NSX Manager VIP FQDN"
+  type        = string
+}
+
+variable "mgmt_nsx_transport_vlan_id" {
+  description = "NSX transport VLAN ID"
+  type        = number
+}
+
+variable "mgmt_nsx_managers" {
+  description = "NSX Manager hostnames"
+  type = list(object({
+    hostname = string
+  }))
+}
+
+variable "mgmt_nsx_ip_pool" {
+  description = "NSX IP address pool for TEP"
   type = object({
-    vip            = string
-    vip_fqdn       = string
-    admin_password = string
-    form_factor    = string
+    name        = string
+    description = string
+    subnets = list(object({
+      cidr    = string
+      gateway = string
+      ip_ranges = list(object({
+        start = string
+        end   = string
+      }))
+    }))
   })
-  sensitive = true
-}
-
-variable "management_nsx_managers" {
-  description = "NSX Manager nodes for management domain"
-  type = list(object({
-    name        = string
-    ip_address  = string
-    fqdn        = string
-    subnet_mask = string
-    gateway     = string
-  }))
-  default = [
-    {
-      name        = "nsx-mgmt-01"
-      ip_address  = "192.168.10.21"
-      fqdn        = "nsx-mgmt-01.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.10.1"
-    },
-    {
-      name        = "nsx-mgmt-02"
-      ip_address  = "192.168.10.22"
-      fqdn        = "nsx-mgmt-02.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.10.1"
-    },
-    {
-      name        = "nsx-mgmt-03"
-      ip_address  = "192.168.10.23"
-      fqdn        = "nsx-mgmt-03.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.10.1"
-    }
-  ]
-}
-
-# ============================================================================
-# Workload Domain - NSX Configuration
-# ============================================================================
-
-variable "workload_nsx" {
-  description = "Workload domain NSX configuration"
-  type = object({
-    vip            = string
-    vip_fqdn       = string
-    admin_password = string
-    form_factor    = string
-  })
-  sensitive = true
-}
-
-variable "workload_nsx_managers" {
-  description = "NSX Manager nodes for workload domain"
-  type = list(object({
-    name        = string
-    ip_address  = string
-    fqdn        = string
-    subnet_mask = string
-    gateway     = string
-  }))
-  default = [
-    {
-      name        = "nsx-wkld-01"
-      ip_address  = "192.168.20.21"
-      fqdn        = "nsx-wkld-01.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.20.1"
-    },
-    {
-      name        = "nsx-wkld-02"
-      ip_address  = "192.168.20.22"
-      fqdn        = "nsx-wkld-02.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.20.1"
-    },
-    {
-      name        = "nsx-wkld-03"
-      ip_address  = "192.168.20.23"
-      fqdn        = "nsx-wkld-03.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.20.1"
-    }
-  ]
-}
-
-# ============================================================================
-# NSX Edge Nodes Configuration
-# ============================================================================
-
-variable "nsx_edge_nodes" {
-  description = "NSX Edge nodes for workload domain"
-  type = list(object({
-    name        = string
-    ip_address  = string
-    fqdn        = string
-    subnet_mask = string
-    gateway     = string
-  }))
-  default = [
-    {
-      name        = "nsx-edge-01"
-      ip_address  = "192.168.20.31"
-      fqdn        = "nsx-edge-01.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.20.1"
-    },
-    {
-      name        = "nsx-edge-02"
-      ip_address  = "192.168.20.32"
-      fqdn        = "nsx-edge-02.example.com"
-      subnet_mask = "255.255.255.0"
-      gateway     = "192.168.20.1"
-    }
-  ]
+  default = null
 }
 
 # ============================================================================
@@ -378,33 +305,40 @@ variable "nsx_edge_nodes" {
 # ============================================================================
 
 variable "vcf_automation_enabled" {
-  description = "Enable VCF Automation service"
+  description = "Enable VCF Automation"
   type        = bool
   default     = true
 }
 
-variable "vcf_automation_ip" {
-  description = "VCF Automation IP address"
+variable "vcf_automation_hostname" {
+  description = "VCF Automation hostname"
   type        = string
-  default     = "192.168.10.41"
+  default     = null
 }
 
-variable "vcf_automation_fqdn" {
-  description = "VCF Automation FQDN"
-  type        = string
-  default     = "vcf-automation.example.com"
+variable "vcf_automation_ip_pool" {
+  description = "VCF Automation IP pool (2 IPs for standard, 4 for HA)"
+  type        = list(string)
+  default     = []
 }
 
-variable "vcf_automation_subnet_mask" {
-  description = "VCF Automation subnet mask"
+variable "vcf_automation_node_prefix" {
+  description = "VCF Automation node prefix"
   type        = string
-  default     = "255.255.255.0"
+  default     = "vcfa-appliance"
 }
 
-variable "vcf_automation_gateway" {
-  description = "VCF Automation gateway"
+variable "vcf_automation_internal_cluster_cidr" {
+  description = "VCF Automation internal cluster CIDR (198.18.0.0/15, 240.0.0.0/15, or 250.0.0.0/15)"
   type        = string
-  default     = "192.168.10.1"
+  default     = "198.18.0.0/15"
+}
+
+variable "vcf_automation_admin_password" {
+  description = "VCF Automation admin password"
+  type        = string
+  sensitive   = true
+  default     = null
 }
 
 # ============================================================================
@@ -412,33 +346,38 @@ variable "vcf_automation_gateway" {
 # ============================================================================
 
 variable "vcf_operations_enabled" {
-  description = "Enable VCF Operations service"
+  description = "Enable VCF Operations"
   type        = bool
   default     = true
 }
 
-variable "vcf_operations_ip" {
-  description = "VCF Operations IP address"
+variable "vcf_operations_appliance_size" {
+  description = "VCF Operations appliance size (xsmall, small, medium, large, xlarge)"
   type        = string
-  default     = "192.168.10.42"
+  default     = "medium"
 }
 
-variable "vcf_operations_fqdn" {
-  description = "VCF Operations FQDN"
+variable "vcf_operations_admin_password" {
+  description = "VCF Operations admin password"
   type        = string
-  default     = "vcf-operations.example.com"
+  sensitive   = true
+  default     = null
 }
 
-variable "vcf_operations_subnet_mask" {
-  description = "VCF Operations subnet mask"
+variable "vcf_operations_load_balancer_fqdn" {
+  description = "VCF Operations load balancer FQDN"
   type        = string
-  default     = "255.255.255.0"
+  default     = null
 }
 
-variable "vcf_operations_gateway" {
-  description = "VCF Operations gateway"
-  type        = string
-  default     = "192.168.10.1"
+variable "vcf_operations_nodes" {
+  description = "VCF Operations nodes"
+  type = list(object({
+    hostname      = string
+    type          = string
+    root_password = string
+  }))
+  default = []
 }
 
 # ============================================================================
@@ -446,143 +385,299 @@ variable "vcf_operations_gateway" {
 # ============================================================================
 
 variable "vcf_operations_collector_enabled" {
-  description = "Enable VCF Operations Collector service"
+  description = "Enable VCF Operations Collector"
   type        = bool
   default     = true
 }
 
-variable "vcf_operations_collector_ip" {
-  description = "VCF Operations Collector IP address"
+variable "vcf_operations_collector_hostname" {
+  description = "VCF Operations Collector hostname"
   type        = string
-  default     = "192.168.10.43"
+  default     = null
 }
 
-variable "vcf_operations_collector_fqdn" {
-  description = "VCF Operations Collector FQDN"
+variable "vcf_operations_collector_appliance_size" {
+  description = "VCF Operations Collector appliance size (small, standard)"
   type        = string
-  default     = "vcf-ops-collector.example.com"
+  default     = "small"
 }
 
-variable "vcf_operations_collector_subnet_mask" {
-  description = "VCF Operations Collector subnet mask"
+variable "vcf_operations_collector_root_password" {
+  description = "VCF Operations Collector root password"
   type        = string
-  default     = "255.255.255.0"
-}
-
-variable "vcf_operations_collector_gateway" {
-  description = "VCF Operations Collector gateway"
-  type        = string
-  default     = "192.168.10.1"
+  sensitive   = true
+  default     = null
 }
 
 # ============================================================================
-# Fleet Manager Configuration
+# VCF Fleet Manager Configuration
 # ============================================================================
 
-variable "fleet_manager_enabled" {
-  description = "Enable Fleet Manager service"
+variable "vcf_fleet_manager_enabled" {
+  description = "Enable VCF Fleet Manager"
   type        = bool
   default     = true
 }
 
-variable "fleet_manager_ip" {
-  description = "Fleet Manager IP address"
+variable "vcf_fleet_manager_hostname" {
+  description = "Fleet Manager hostname"
   type        = string
-  default     = "192.168.10.44"
+  default     = null
 }
 
-variable "fleet_manager_fqdn" {
-  description = "Fleet Manager FQDN"
+variable "vcf_fleet_manager_root_password" {
+  description = "Fleet Manager root password"
   type        = string
-  default     = "fleet-manager.example.com"
+  sensitive   = true
+  default     = null
 }
 
-variable "fleet_manager_subnet_mask" {
-  description = "Fleet Manager subnet mask"
+variable "vcf_fleet_manager_admin_password" {
+  description = "Fleet Manager admin password"
   type        = string
-  default     = "255.255.255.0"
-}
-
-variable "fleet_manager_gateway" {
-  description = "Fleet Manager gateway"
-  type        = string
-  default     = "192.168.10.1"
+  sensitive   = true
+  default     = null
 }
 
 # ============================================================================
-# Supervisor Configuration
+# SDDC Manager Additional Configuration
 # ============================================================================
 
-variable "supervisor_enabled" {
-  description = "Enable Supervisor for workload domain"
+variable "sddc_manager_config_enabled" {
+  description = "Configure SDDC Manager settings"
+  type        = bool
+  default     = false
+}
+
+variable "sddc_manager_hostname" {
+  description = "SDDC Manager hostname"
+  type        = string
+  default     = null
+}
+
+variable "sddc_manager_root_password" {
+  description = "SDDC Manager root password"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "sddc_manager_ssh_password" {
+  description = "SDDC Manager SSH password (vcf user)"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "sddc_manager_local_password" {
+  description = "SDDC Manager local admin password (break glass)"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+# ============================================================================
+# WORKLOAD DOMAIN - Basic Configuration
+# ============================================================================
+
+variable "workload_domain_enabled" {
+  description = "Enable workload domain creation"
   type        = bool
   default     = true
 }
 
-variable "supervisor_management_ip" {
-  description = "Supervisor management IP address"
+variable "workload_domain_name" {
+  description = "Workload domain name (3-20 characters)"
   type        = string
-  default     = "192.168.20.50"
+  default     = "wld"
 }
 
-variable "supervisor_control_plane_ips" {
-  description = "Supervisor control plane IP addresses"
-  type        = list(string)
-  default     = ["192.168.20.51", "192.168.20.52", "192.168.20.53"]
-}
-
-variable "supervisor_subnet_mask" {
-  description = "Supervisor subnet mask"
+variable "workload_domain_org_name" {
+  description = "Workload domain organization name"
   type        = string
-  default     = "255.255.255.0"
-}
-
-variable "supervisor_gateway" {
-  description = "Supervisor gateway"
-  type        = string
-  default     = "192.168.20.1"
-}
-
-variable "supervisor_dns_servers" {
-  description = "Supervisor DNS servers"
-  type        = list(string)
-  default     = ["192.168.10.2", "192.168.10.3"]
-}
-
-variable "supervisor_ntp_servers" {
-  description = "Supervisor NTP servers"
-  type        = list(string)
-  default     = ["time.vmware.com"]
+  default     = null
 }
 
 # ============================================================================
-# Supervisor Pools Configuration
+# Workload Domain - vCenter Configuration
 # ============================================================================
 
-variable "supervisor_pools" {
-  description = "Supervisor pools configuration with IP ranges"
-  type = map(object({
-    name           = string
-    ip_range_start = string
-    ip_range_end   = string
-    subnet_mask    = string
-    gateway        = string
+variable "workload_vcenter_name" {
+  description = "Workload vCenter name"
+  type        = string
+  default     = null
+}
+
+variable "workload_datacenter_name" {
+  description = "Workload datacenter name"
+  type        = string
+  default     = null
+}
+
+variable "workload_vcenter_root_password" {
+  description = "Workload vCenter root password (8-20 chars)"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "workload_vcenter_vm_size" {
+  description = "Workload vCenter VM size (tiny, small, medium, large, xlarge)"
+  type        = string
+  default     = "medium"
+}
+
+variable "workload_vcenter_storage_size" {
+  description = "Workload vCenter storage size (lstorage, xlstorage)"
+  type        = string
+  default     = "lstorage"
+}
+
+variable "workload_vcenter_ip" {
+  description = "Workload vCenter IP address"
+  type        = string
+  default     = null
+}
+
+variable "workload_vcenter_subnet_mask" {
+  description = "Workload vCenter subnet mask"
+  type        = string
+  default     = null
+}
+
+variable "workload_vcenter_gateway" {
+  description = "Workload vCenter gateway"
+  type        = string
+  default     = null
+}
+
+variable "workload_vcenter_fqdn" {
+  description = "Workload vCenter FQDN"
+  type        = string
+  default     = null
+}
+
+# ============================================================================
+# Workload Domain - SSO Configuration
+# ============================================================================
+
+variable "workload_sso_domain_name" {
+  description = "Workload SSO domain name"
+  type        = string
+  default     = null
+}
+
+variable "workload_sso_domain_password" {
+  description = "Workload SSO domain password"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+# ============================================================================
+# Workload Domain - NSX Configuration
+# ============================================================================
+
+variable "workload_nsx_enabled" {
+  description = "Enable NSX for workload domain"
+  type        = bool
+  default     = true
+}
+
+variable "workload_nsx_admin_password" {
+  description = "Workload NSX admin password"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "workload_nsx_audit_password" {
+  description = "Workload NSX audit password"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "workload_nsx_vip" {
+  description = "Workload NSX VIP address"
+  type        = string
+  default     = null
+}
+
+variable "workload_nsx_vip_fqdn" {
+  description = "Workload NSX VIP FQDN"
+  type        = string
+  default     = null
+}
+
+variable "workload_nsx_form_factor" {
+  description = "Workload NSX form factor (small, medium, large)"
+  type        = string
+  default     = "large"
+}
+
+variable "workload_nsx_managers" {
+  description = "Workload NSX Manager nodes with IP addresses"
+  type = list(object({
+    name        = string
+    ip_address  = string
+    fqdn        = string
+    subnet_mask = string
+    gateway     = string
   }))
-  default = {
-    pool1 = {
-      name           = "supervisor-pool-1"
-      ip_range_start = "192.168.20.60"
-      ip_range_end   = "192.168.20.80"
-      subnet_mask    = "255.255.255.0"
-      gateway        = "192.168.20.1"
-    },
-    pool2 = {
-      name           = "supervisor-pool-2"
-      ip_range_start = "192.168.20.81"
-      ip_range_end   = "192.168.20.100"
-      subnet_mask    = "255.255.255.0"
-      gateway        = "192.168.20.1"
-    }
-  }
+  default = []
 }
 
+# ============================================================================
+# Workload Domain - Cluster Configuration
+# ============================================================================
+
+variable "workload_clusters" {
+  description = "Workload domain cluster specifications"
+  type = list(object({
+    name                      = string
+    cluster_image_id          = string
+    evc_mode                  = string
+    high_availability_enabled = bool
+    geneve_vlan_id            = number
+    
+    vsan_datastore = object({
+      datastore_name                = string
+      failures_to_tolerate          = number
+      dedup_and_compression_enabled = bool
+      esa_enabled                   = bool
+    })
+    
+    host_ids = list(string)
+    
+    vmnic_mappings = list(object({
+      vmnic_id = string
+      vds_name = string
+      uplink   = string
+    }))
+    
+    vds_configs = list(object({
+      name          = string
+      is_used_by_nsx = bool
+      portgroups = list(object({
+        name           = string
+        transport_type = string
+        active_uplinks = list(string)
+      }))
+    }))
+    
+    ip_address_pool = object({
+      name        = string
+      description = string
+      subnets = list(object({
+        cidr    = string
+        gateway = string
+        ip_ranges = list(object({
+          start = string
+          end   = string
+        }))
+      }))
+    })
+  }))
+  default = []
+}
