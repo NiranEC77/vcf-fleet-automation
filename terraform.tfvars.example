@@ -391,33 +391,83 @@ workload_clusters = [
       esa_enabled                   = false
     }
     
-    # Host IDs from VCF (these are UUIDs obtained after hosts are commissioned)
-    host_ids = [
-      "e2d0419c-fe99-4a50-92e5-2918e1dfcb3f",
-      "1a2ac975-4166-4645-ab93-a5b8c4e3c7cb",
-      "061db7f3-e284-4a2f-a99a-ef19179727e8"
-    ]
-    
-    vmnic_mappings = [
+    # Hosts with their vmnic configurations
+    # Host IDs are UUIDs obtained after hosts are commissioned in SDDC Manager
+    hosts = [
       {
-        vmnic_id = "vmnic0"
-        vds_name = "cls-wld9-vds-01"
-        uplink   = "uplink1"
+        id = "e2d0419c-fe99-4a50-92e5-2918e1dfcb3f"
+        vmnics = [
+          {
+            id       = "vmnic0"
+            vds_name = "cls-wld9-vds-01"
+            uplink   = "uplink1"
+          },
+          {
+            id       = "vmnic1"
+            vds_name = "cls-wld9-vds-01"
+            uplink   = "uplink2"
+          },
+          {
+            id       = "vmnic2"
+            vds_name = "cls-wld9-vds-02"
+            uplink   = "uplink1"
+          },
+          {
+            id       = "vmnic3"
+            vds_name = "cls-wld9-vds-02"
+            uplink   = "uplink2"
+          }
+        ]
       },
       {
-        vmnic_id = "vmnic1"
-        vds_name = "cls-wld9-vds-01"
-        uplink   = "uplink2"
+        id = "1a2ac975-4166-4645-ab93-a5b8c4e3c7cb"
+        vmnics = [
+          {
+            id       = "vmnic0"
+            vds_name = "cls-wld9-vds-01"
+            uplink   = "uplink1"
+          },
+          {
+            id       = "vmnic1"
+            vds_name = "cls-wld9-vds-01"
+            uplink   = "uplink2"
+          },
+          {
+            id       = "vmnic2"
+            vds_name = "cls-wld9-vds-02"
+            uplink   = "uplink1"
+          },
+          {
+            id       = "vmnic3"
+            vds_name = "cls-wld9-vds-02"
+            uplink   = "uplink2"
+          }
+        ]
       },
       {
-        vmnic_id = "vmnic2"
-        vds_name = "cls-wld9-vds-02"
-        uplink   = "uplink1"
-      },
-      {
-        vmnic_id = "vmnic3"
-        vds_name = "cls-wld9-vds-02"
-        uplink   = "uplink2"
+        id = "061db7f3-e284-4a2f-a99a-ef19179727e8"
+        vmnics = [
+          {
+            id       = "vmnic0"
+            vds_name = "cls-wld9-vds-01"
+            uplink   = "uplink1"
+          },
+          {
+            id       = "vmnic1"
+            vds_name = "cls-wld9-vds-01"
+            uplink   = "uplink2"
+          },
+          {
+            id       = "vmnic2"
+            vds_name = "cls-wld9-vds-02"
+            uplink   = "uplink1"
+          },
+          {
+            id       = "vmnic3"
+            vds_name = "cls-wld9-vds-02"
+            uplink   = "uplink2"
+          }
+        ]
       }
     ]
     

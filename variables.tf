@@ -689,16 +689,17 @@ variable "workload_clusters" {
       esa_enabled                   = bool
     })
     
-    host_ids = list(string)
-    
-    vmnic_mappings = list(object({
-      vmnic_id = string
-      vds_name = string
-      uplink   = string
+    hosts = list(object({
+      id = string
+      vmnics = list(object({
+        id       = string
+        vds_name = string
+        uplink   = string
+      }))
     }))
     
     vds_configs = list(object({
-      name          = string
+      name           = string
       is_used_by_nsx = bool
       portgroups = list(object({
         name           = string
