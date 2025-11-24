@@ -1,272 +1,213 @@
-# VCF Fleet Automation with Terraform
+# VCF Infrastructure Terraform Configuration
 
-[![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](https://terraform.io)
-[![VMware](https://img.shields.io/badge/VMware-607078.svg?style=for-the-badge&logo=VMware&logoColor=white)](https://www.vmware.com)
-[![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://www.python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-
-This repository contains Terraform configurations and automation scripts for deploying VMware Cloud Foundation (VCF) fleets with VCF Automation, VCF Operations, and workload domains with supervisor services enabled.
-
-## 🚀 Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/NiranEC77/vcf-fleet-automation.git
-cd vcf-fleet-automation
-
-# Run setup
-./setup.sh
-
-# Configure your environment
-cd configs/dev
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your VCF details
-
-# Deploy VCF fleet
-./scripts/vcf-deploy.sh dev
-```
-
-## Overview
-
-This automation deploys:
-- **VCF Fleet Domain** with VCF Automation and Operations capabilities
-- **VCF Workload Domain** with supervisor services enabled
-- **Network pools** for management, vSAN, vMotion, VCF Automation, and VCF Operations
-- **ESXi hosts** configured for VCF management
-- **vCenter and NSX** instances for both domains
+This is a simplified Terraform configuration for deploying VMware Cloud Foundation (VCF) infrastructure. All scripts have been removed - you simply configure the variables and run Terraform directly.
 
 ## Prerequisites
 
-### 🏗️ **VCF 9 Bootstrap Prerequisites (Use Case 1: New VCF)**
-- **VCF Installer Appliance** (Cloud Builder) for VCF 9
-- **ESXi hosts** (minimum 4 for management domain, additional for workload domains)
-- **VCF 9.0.0+** (includes VCF Automation and Operations built-in)
- - Optional: VCDF license. VCF 9 boots in 90‑day evaluation by default; no ESXi/NSX/vSAN keys needed during bootstrap.
-- **Network infrastructure** with proper VLANs
-
-### 🏗️ **Existing VCF Prerequisites (Use Case 2: Manage Existing)**
-- **Existing VCF Environment** with SDDC Manager already deployed
-- **SDDC Manager** running and accessible (IP/FQDN, username, password)
-- **VCF 9.0.0+** (supports VCF Automation and Operations)
-
-### 🛠️ **Tool Prerequisites**
-- Terraform 1.4+
-- VCF Terraform Provider 0.17.0+
-- Network connectivity to VCF environment
-
-### 📝 **VCF 9 Bootstrap Process**
-1. **Deploy VCF Installer Appliance** (Cloud Builder)
-2. **Bootstrap VCF Management Domain** (includes VCF Automation/Operations)
-3. **Use this automation** to create additional workload domains
+- VMware Cloud Foundation environment already installed with SDDC Manager running
+- Terraform >= 1.4 installed
+- Access to SDDC Manager with administrator credentials
+- All component IPs and FQDNs planned and documented
 
 ## Quick Start
 
-1. **Clone and setup:**
-   ```bash
-   cd /Users/niranevenchen/Documents/code
-   # The VCF provider is already cloned at terraform-provider-vcf/
-   ```
+### 1. Configure Your Variables
 
-2. **Configure your environment:**
-   ```bash
-   cd vcf-automation/configs/dev
-   cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars with your VCF environment details
-   ```
-
-3. **Deploy VCF fleet:**
-   ```bash
-   ./scripts/vcf-deploy.sh dev
-   ```
-
-## Directory Structure
-
-```
-vcf-automation/
-├── configs/
-│   ├── dev/                    # Development environment
-│   │   ├── main.tf            # Main VCF fleet configuration
-│   │   ├── variables.tf       # Variable definitions
-│   │   └── terraform.tfvars.example  # Example configuration
-│   ├── staging/               # Staging environment
-│   └── prod/                  # Production environment
-├── scripts/
-│   ├── vcf-deploy.sh          # Deployment script
-│   ├── vcf-destroy.sh         # Destruction script
-│   └── vcf-status.sh          # Status checking script
-└── modules/                   # Reusable Terraform modules
-```
-
-## Configuration
-
-### Required Variables
-
-Edit `configs/dev/terraform.tfvars` with your environment details:
-
-```hcl
-# VCF Provider Configuration
-sddc_manager_host     = "192.168.1.10"
-sddc_manager_username = "administrator@vsphere.local"
-sddc_manager_password = "VMware1!"
-
-# ESXi Hosts
-esx_hosts = [
-  {
-    fqdn     = "esx01.dev.example.com"
-    username = "root"
-    password = "VMware1!"
-  }
-  # Add more hosts...
-]
-
-# No license keys are required for VCF 9 bootstrap (90‑day evaluation period)
-```
-
-### Network Configuration
-
-The automation creates network pools for:
-- **Management Network** (VLAN 100)
-- **vSAN Network** (VLAN 101) 
-- **vMotion Network** (VLAN 102)
-- **VCF Automation Network** (VLAN 103)
-- **VCF Operations Network** (VLAN 104)
-
-## Usage
-
-### Deploy VCF Fleet
+Copy the example variables file:
 
 ```bash
-# Deploy to development environment
-./scripts/vcf-deploy.sh dev
-
-# Deploy to staging environment  
-./scripts/vcf-deploy.sh staging
-
-# Deploy to production environment
-./scripts/vcf-deploy.sh prod
+cp terraform.tfvars.example terraform.tfvars
 ```
 
-### Check Status
+Edit `terraform.tfvars` and configure all IP addresses and settings for your environment:
+
+- **Management Domain ESXi Hosts** - IP addresses for management domain hosts
+- **Workload Domain ESXi Hosts** - IP addresses for workload domain hosts
+- **vCenter Servers** - IPs for management and workload vCenter instances
+- **NSX Managers** - IP addresses for NSX Manager nodes (management and workload)
+- **NSX Edges** - IP addresses for NSX Edge nodes
+- **VCF Automation** - IP address for VCF Automation service
+- **VCF Operations** - IP address for VCF Operations service
+- **VCF Operations Collector** - IP address for VCF Ops Collector
+- **Fleet Manager** - IP address for Fleet Manager
+- **Supervisor** - Management and control plane IPs for Supervisor
+- **Supervisor Pools** - IP ranges for Supervisor pools
+
+### 2. Initialize Terraform
 
 ```bash
-# Check deployment status
-./scripts/vcf-status.sh dev
+terraform init
 ```
 
-### Destroy VCF Fleet
-
-⚠️ **WARNING**: This will permanently destroy your VCF fleet!
+### 3. Review the Plan
 
 ```bash
-# Destroy development environment
-./scripts/vcf-destroy.sh dev
+terraform plan
 ```
 
-## VCF Fleet Components
+### 4. Apply the Configuration
 
-### Fleet Domain
-- **vCenter**: Fleet management vCenter
-- **NSX**: Fleet NSX Manager cluster
-- **Cluster**: Main fleet management cluster
-- **Network Pools**: VCF Automation and Operations networks
-
-### Workload Domain  
-- **vCenter**: Workload vCenter with supervisor services
-- **NSX**: Workload NSX Manager cluster
-- **Cluster**: Workload cluster with supervisor enabled
-- **Supervisor Services**: Tanzu Kubernetes Grid, vSphere with Tanzu
-
-## Advanced Configuration
-
-### Customizing Network Configuration
-
-Edit the network variables in `variables.tf`:
-
-```hcl
-# Management Network
-management_gateway = "192.168.10.1"
-management_subnet  = "192.168.10.0"
-management_vlan    = 100
-
-# VCF Automation Network
-vcf_automation_gateway = "192.168.13.1"
-vcf_automation_subnet  = "192.168.13.0"
-vcf_automation_vlan    = 103
+```bash
+terraform apply
 ```
+
+### 5. View Outputs
+
+```bash
+terraform output
+```
+
+## Configuration Files
+
+### main.tf
+Contains all infrastructure resource definitions:
+- Network pools
+- ESXi hosts (management and workload domains)
+- Management domain with vCenter and NSX
+- Workload domain with vCenter, NSX, and Supervisor
+- VCF services (Automation, Operations, Fleet Manager)
+- Supervisor and Supervisor pools
+
+### variables.tf
+Comprehensive variable definitions for all components with sensible defaults. All IP addresses and network configuration can be customized.
+
+### outputs.tf
+Useful outputs including:
+- Domain IDs and names
+- All component IP addresses
+- Network configuration details
+
+### terraform.tfvars.example
+Example configuration file with all variables. Copy to `terraform.tfvars` and customize for your environment.
+
+## IP Address Planning
+
+Make sure you have planned and documented:
+
+1. **Management Domain** (typically 192.168.10.0/24):
+   - ESXi hosts: .11, .12, .13
+   - vCenter: .15
+   - NSX VIP: .20
+   - NSX Managers: .21, .22, .23
+   - VCF Services: .41-.44
+
+2. **Workload Domain** (typically 192.168.20.0/24):
+   - ESXi hosts: .11-.14
+   - vCenter: .15
+   - NSX VIP: .20
+   - NSX Managers: .21, .22, .23
+   - NSX Edges: .31, .32
+   - Supervisor: .50-.53
+   - Supervisor Pools: .60-.100
+
+3. **Infrastructure Networks**:
+   - vSAN: 192.168.11.0/24
+   - vMotion: 192.168.12.0/24
+
+## Customization
 
 ### Adding More ESXi Hosts
 
-Add hosts to the `esx_hosts` variable:
+Edit the `management_domain_esxi_hosts` or `workload_domain_esxi_hosts` list in `terraform.tfvars`:
 
 ```hcl
-esx_hosts = [
+workload_domain_esxi_hosts = [
   {
-    fqdn     = "esx01.dev.example.com"
-    username = "root"
-    password = "VMware1!"
-  },
-  {
-    fqdn     = "esx02.dev.example.com"
-    username = "root"
-    password = "VMware1!"
+    fqdn         = "esx-wkld-05.example.com"
+    ip_address   = "192.168.20.15"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
   }
-  # Add more hosts...
 ]
+```
+
+### Adding More NSX Edges
+
+Add entries to the `nsx_edge_nodes` list in `terraform.tfvars`:
+
+```hcl
+nsx_edge_nodes = [
+  {
+    name        = "nsx-edge-03"
+    ip_address  = "192.168.20.33"
+    fqdn        = "nsx-edge-03.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.20.1"
+  }
+]
+```
+
+### Adding More Supervisor Pools
+
+Add entries to the `supervisor_pools` map in `terraform.tfvars`:
+
+```hcl
+supervisor_pools = {
+  pool3 = {
+    name           = "supervisor-pool-3"
+    ip_range_start = "192.168.20.101"
+    ip_range_end   = "192.168.20.120"
+    subnet_mask    = "255.255.255.0"
+    gateway        = "192.168.20.1"
+  }
+}
+```
+
+### Disabling Optional Services
+
+Set the enabled flag to `false` in `terraform.tfvars`:
+
+```hcl
+vcf_automation_enabled = false
+vcf_operations_enabled = false
+fleet_manager_enabled = false
+supervisor_enabled = false
+```
+
+## Destroying Infrastructure
+
+To destroy all created infrastructure:
+
+```bash
+terraform destroy
 ```
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **Provider not found**: Ensure VCF provider is properly configured
-2. **Network conflicts**: Check VLAN and IP address assignments
-3. **Host connectivity**: Ensure ESXi hosts are accessible
-
-### Debugging
-
-Enable Terraform debug logging:
+### Viewing Current State
 
 ```bash
-export TF_LOG=DEBUG
-./scripts/vcf-deploy.sh dev
+terraform show
 ```
 
-### Checking Logs
+### Refreshing State
 
-Terraform logs are stored in the config directory:
 ```bash
-ls -la configs/dev/.terraform/
+terraform refresh
 ```
 
-## Security Considerations
+### Listing Resources
 
-- Store sensitive variables in environment variables or secure vaults
-- Use strong passwords for all accounts
-- Regularly rotate credentials
-- Limit network access to VCF management interfaces
-- Enable audit logging
+```bash
+terraform state list
+```
 
-## Contributing
+### Viewing Specific Resource
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+```bash
+terraform state show vcf_domain.management
+```
 
-## License
+## Security Notes
 
-This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE](LICENSE) file for details.
+- Never commit `terraform.tfvars` to version control (it contains passwords)
+- Use environment variables or a secrets management tool for sensitive values
+- Ensure SDDC Manager API access is secured
+- Review all security group and firewall rules
 
 ## Support
 
-- [VMware Cloud Foundation Documentation](https://docs.vmware.com/en/VMware-Cloud-Foundation/)
-- [VCF Terraform Provider Documentation](https://registry.terraform.io/providers/vmware/vcf/latest/docs)
-- [VMware Community](https://communities.vmware.com/)
-
-## References
-
-- [VMware Cloud Foundation](https://github.com/vmware/terraform-provider-vcf)
-- [Terraform Provider for VCF](https://registry.terraform.io/providers/vmware/vcf/)
-- [VCF Automation Documentation](https://docs.vmware.com/en/VMware-Cloud-Foundation/)
-- [VCF Operations Documentation](https://docs.vmware.com/en/VMware-Cloud-Foundation/)
+For issues with the Terraform VCF provider, see:
+- [VMware VCF Provider Documentation](https://registry.terraform.io/providers/vmware/vcf/latest/docs)
+- [VCF Provider GitHub Repository](https://github.com/vmware/terraform-provider-vcf)

@@ -1,0 +1,312 @@
+# VCF Infrastructure Configuration Example
+# Copy this file to terraform.tfvars and fill in your values
+
+environment = "dev"
+
+# ============================================================================
+# SDDC Manager Configuration
+# ============================================================================
+
+sddc_manager_host     = "sddc-manager.example.com"
+sddc_manager_username = "administrator@vsphere.local"
+sddc_manager_password = "YourSecurePassword!"
+
+# ============================================================================
+# Network Configuration
+# ============================================================================
+
+management_network = {
+  gateway       = "192.168.10.1"
+  mask          = "255.255.255.0"
+  subnet        = "192.168.10.0"
+  vlan_id       = 100
+  mtu           = 9000
+  ip_pool_start = "192.168.10.50"
+  ip_pool_end   = "192.168.10.100"
+}
+
+vsan_network = {
+  gateway       = "192.168.11.1"
+  mask          = "255.255.255.0"
+  subnet        = "192.168.11.0"
+  vlan_id       = 101
+  mtu           = 9000
+  ip_pool_start = "192.168.11.50"
+  ip_pool_end   = "192.168.11.100"
+}
+
+vmotion_network = {
+  gateway       = "192.168.12.1"
+  mask          = "255.255.255.0"
+  subnet        = "192.168.12.0"
+  vlan_id       = 102
+  mtu           = 9000
+  ip_pool_start = "192.168.12.50"
+  ip_pool_end   = "192.168.12.100"
+}
+
+# ============================================================================
+# Management Domain - ESXi Hosts
+# ============================================================================
+
+management_domain_esxi_hosts = [
+  {
+    fqdn         = "esx-mgmt-01.example.com"
+    ip_address   = "192.168.10.11"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  },
+  {
+    fqdn         = "esx-mgmt-02.example.com"
+    ip_address   = "192.168.10.12"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  },
+  {
+    fqdn         = "esx-mgmt-03.example.com"
+    ip_address   = "192.168.10.13"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  }
+]
+
+management_domain_vsan_ftol  = 1
+management_domain_geneve_vlan = 2
+
+# ============================================================================
+# Workload Domain - ESXi Hosts
+# ============================================================================
+
+workload_domain_esxi_hosts = [
+  {
+    fqdn         = "esx-wkld-01.example.com"
+    ip_address   = "192.168.20.11"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  },
+  {
+    fqdn         = "esx-wkld-02.example.com"
+    ip_address   = "192.168.20.12"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  },
+  {
+    fqdn         = "esx-wkld-03.example.com"
+    ip_address   = "192.168.20.13"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  },
+  {
+    fqdn         = "esx-wkld-04.example.com"
+    ip_address   = "192.168.20.14"
+    username     = "root"
+    password     = "YourESXiPassword!"
+    storage_type = "VSAN"
+  }
+]
+
+workload_domain_vsan_ftol  = 1
+workload_domain_geneve_vlan = 3
+
+# ============================================================================
+# Management Domain - vCenter Configuration
+# ============================================================================
+
+management_vcenter = {
+  name            = "vcenter-mgmt"
+  datacenter_name = "mgmt-datacenter"
+  root_password   = "YourVCenterPassword!"
+  vm_size         = "medium"
+  storage_size    = "lstorage"
+  ip_address      = "192.168.10.15"
+  subnet_mask     = "255.255.255.0"
+  gateway         = "192.168.10.1"
+  fqdn            = "vcenter-mgmt.example.com"
+}
+
+# ============================================================================
+# Workload Domain - vCenter Configuration
+# ============================================================================
+
+workload_vcenter = {
+  name            = "vcenter-wkld"
+  datacenter_name = "wkld-datacenter"
+  root_password   = "YourVCenterPassword!"
+  vm_size         = "medium"
+  storage_size    = "lstorage"
+  ip_address      = "192.168.20.15"
+  subnet_mask     = "255.255.255.0"
+  gateway         = "192.168.20.1"
+  fqdn            = "vcenter-wkld.example.com"
+}
+
+# ============================================================================
+# Management Domain - NSX Configuration
+# ============================================================================
+
+management_nsx = {
+  vip            = "192.168.10.20"
+  vip_fqdn       = "nsx-mgmt.example.com"
+  admin_password = "YourNSXPassword!"
+  form_factor    = "small"
+}
+
+management_nsx_managers = [
+  {
+    name        = "nsx-mgmt-01"
+    ip_address  = "192.168.10.21"
+    fqdn        = "nsx-mgmt-01.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.10.1"
+  },
+  {
+    name        = "nsx-mgmt-02"
+    ip_address  = "192.168.10.22"
+    fqdn        = "nsx-mgmt-02.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.10.1"
+  },
+  {
+    name        = "nsx-mgmt-03"
+    ip_address  = "192.168.10.23"
+    fqdn        = "nsx-mgmt-03.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.10.1"
+  }
+]
+
+# ============================================================================
+# Workload Domain - NSX Configuration
+# ============================================================================
+
+workload_nsx = {
+  vip            = "192.168.20.20"
+  vip_fqdn       = "nsx-wkld.example.com"
+  admin_password = "YourNSXPassword!"
+  form_factor    = "small"
+}
+
+workload_nsx_managers = [
+  {
+    name        = "nsx-wkld-01"
+    ip_address  = "192.168.20.21"
+    fqdn        = "nsx-wkld-01.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.20.1"
+  },
+  {
+    name        = "nsx-wkld-02"
+    ip_address  = "192.168.20.22"
+    fqdn        = "nsx-wkld-02.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.20.1"
+  },
+  {
+    name        = "nsx-wkld-03"
+    ip_address  = "192.168.20.23"
+    fqdn        = "nsx-wkld-03.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.20.1"
+  }
+]
+
+# ============================================================================
+# NSX Edge Nodes Configuration
+# ============================================================================
+
+nsx_edge_nodes = [
+  {
+    name        = "nsx-edge-01"
+    ip_address  = "192.168.20.31"
+    fqdn        = "nsx-edge-01.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.20.1"
+  },
+  {
+    name        = "nsx-edge-02"
+    ip_address  = "192.168.20.32"
+    fqdn        = "nsx-edge-02.example.com"
+    subnet_mask = "255.255.255.0"
+    gateway     = "192.168.20.1"
+  }
+]
+
+# ============================================================================
+# VCF Automation Configuration
+# ============================================================================
+
+vcf_automation_enabled     = true
+vcf_automation_ip          = "192.168.10.41"
+vcf_automation_fqdn        = "vcf-automation.example.com"
+vcf_automation_subnet_mask = "255.255.255.0"
+vcf_automation_gateway     = "192.168.10.1"
+
+# ============================================================================
+# VCF Operations Configuration
+# ============================================================================
+
+vcf_operations_enabled     = true
+vcf_operations_ip          = "192.168.10.42"
+vcf_operations_fqdn        = "vcf-operations.example.com"
+vcf_operations_subnet_mask = "255.255.255.0"
+vcf_operations_gateway     = "192.168.10.1"
+
+# ============================================================================
+# VCF Operations Collector Configuration
+# ============================================================================
+
+vcf_operations_collector_enabled     = true
+vcf_operations_collector_ip          = "192.168.10.43"
+vcf_operations_collector_fqdn        = "vcf-ops-collector.example.com"
+vcf_operations_collector_subnet_mask = "255.255.255.0"
+vcf_operations_collector_gateway     = "192.168.10.1"
+
+# ============================================================================
+# Fleet Manager Configuration
+# ============================================================================
+
+fleet_manager_enabled     = true
+fleet_manager_ip          = "192.168.10.44"
+fleet_manager_fqdn        = "fleet-manager.example.com"
+fleet_manager_subnet_mask = "255.255.255.0"
+fleet_manager_gateway     = "192.168.10.1"
+
+# ============================================================================
+# Supervisor Configuration
+# ============================================================================
+
+supervisor_enabled         = true
+supervisor_management_ip   = "192.168.20.50"
+supervisor_control_plane_ips = ["192.168.20.51", "192.168.20.52", "192.168.20.53"]
+supervisor_subnet_mask     = "255.255.255.0"
+supervisor_gateway         = "192.168.20.1"
+supervisor_dns_servers     = ["192.168.10.2", "192.168.10.3"]
+supervisor_ntp_servers     = ["time.vmware.com"]
+
+# ============================================================================
+# Supervisor Pools Configuration
+# ============================================================================
+
+supervisor_pools = {
+  pool1 = {
+    name           = "supervisor-pool-1"
+    ip_range_start = "192.168.20.60"
+    ip_range_end   = "192.168.20.80"
+    subnet_mask    = "255.255.255.0"
+    gateway        = "192.168.20.1"
+  },
+  pool2 = {
+    name           = "supervisor-pool-2"
+    ip_range_start = "192.168.20.81"
+    ip_range_end   = "192.168.20.100"
+    subnet_mask    = "255.255.255.0"
+    gateway        = "192.168.20.1"
+  }
+}
+
