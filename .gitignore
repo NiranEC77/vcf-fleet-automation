@@ -23,3 +23,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Generated VCF JSON specs
+vcf-bringup-spec.json
+vcf-*.json
+

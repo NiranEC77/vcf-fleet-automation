@@ -66,6 +66,24 @@ cp terraform.tfvars.example terraform.tfvars
 
 Edit `terraform.tfvars` with your environment details. The example file is based on VCF 9.x JSON structure.
 
+### 1.5. Test Your Configuration (Optional)
+
+Before running Terraform, you can test your configuration by converting it to VCF JSON:
+
+```bash
+./scripts/test-config.sh
+```
+
+This generates `vcf-bringup-spec.json` which you can:
+- 📋 Upload to Cloud Builder UI for validation
+- 🔍 Review manually before deployment
+- 🧪 Test different configurations quickly
+
+**Benefits:**
+- Validate configuration without waiting for Terraform
+- See validation errors in Cloud Builder UI
+- Quick iteration on network/host settings
+
 ### 2. Initialize Terraform
 
 ```bash
@@ -322,6 +340,36 @@ vcf_operations_collector_enabled = false
 vcf_fleet_manager_enabled        = false
 workload_domain_enabled          = false
 ```
+
+## Testing Configuration Before Deployment
+
+### Generate VCF JSON from tfvars
+
+Convert your `terraform.tfvars` to VCF JSON format for testing:
+
+```bash
+# Simple wrapper script
+./scripts/test-config.sh
+
+# Or use the Python script directly
+./scripts/tfvars-to-json.py terraform.tfvars my-config.json
+```
+
+### Upload to Cloud Builder for Validation
+
+1. Open Cloud Builder UI: `https://10.1.1.191/`
+2. Navigate to **Bring-up** tab
+3. Click **Upload JSON**
+4. Select `vcf-bringup-spec.json`
+5. Review validation results in real-time
+
+**Advantages:**
+- ✅ Instant validation feedback
+- ✅ See validation progress in UI
+- ✅ Fix issues before Terraform deployment
+- ✅ No waiting for Terraform background validation
+
+**Note:** The generated JSON is simplified. For full deployment, always use `terraform apply`.
 
 ## Troubleshooting
 
