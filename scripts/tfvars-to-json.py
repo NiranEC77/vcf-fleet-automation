@@ -433,11 +433,15 @@ def convert_to_vcf_json(variables):
     
     # VCF Operations Collector
     if variables.get('vcf_operations_collector_enabled', False):
+        collector_hostname = safe_get('vcf_operations_collector_hostname', 'vcf-ops-collector.vcf.lab')
+        collector_size = safe_get('vcf_operations_collector_appliance_size', 'small')
+        collector_password = safe_get('vcf_operations_collector_root_password', 'VMware123!')
+        
         spec["vcfOperationsCollectorSpec"] = {
-            "applicationSize": variables.get('vcf_operations_collector_appliance_size', 'small'),
-            "hostname": variables.get('vcf_operations_collector_hostname', 'vcf-ops-collector.vcf.lab'),
-            "applianceSize": variables.get('vcf_operations_collector_appliance_size', 'small'),
-            "rootUserPassword": variables.get('vcf_operations_collector_root_password', 'VMware123!'),
+            "applicationSize": collector_size,
+            "hostname": collector_hostname,
+            "applianceSize": collector_size,
+            "rootUserPassword": collector_password,
             "useExistingDeployment": False
         }
     
@@ -465,16 +469,19 @@ def convert_to_vcf_json(variables):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: ./tfvars-to-json.py [terraform.tfvars] [output.json]")
+        print("Usage: ./tfvars-to-json.py [terraform.tfvars] [output.json] [--debug]")
         print("\nExample:")
         print("  ./tfvars-to-json.py terraform.tfvars vcf-spec.json")
+        print("  ./tfvars-to-json.py terraform.tfvars vcf-spec.json --debug")
         sys.exit(1)
     
     tfvars_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'vcf-bringup-spec.json'
+    output_file = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith('--') else 'vcf-bringup-spec.json'
+    debug_mode = '--debug' in sys.argv
     
     # Read tfvars file
     print(f"📖 Reading {tfvars_file}...")
+    print(f"   Absolute path: {Path(tfvars_file).absolute()}")
     try:
         with open(tfvars_file, 'r') as f:
             tfvars_content = f.read()
@@ -482,12 +489,27 @@ def main():
         print(f"❌ Error: File '{tfvars_file}' not found!")
         sys.exit(1)
     
+    if debug_mode:
+        print(f"\n🔍 DEBUG: File size: {len(tfvars_content)} bytes")
+        print(f"🔍 DEBUG: First 200 chars:\n{tfvars_content[:200]}...")
+    
     # Parse tfvars
     print("🔄 Parsing terraform variables...")
     variables = parse_tfvars(tfvars_content)
     
     # Show what was parsed
     print(f"   ✓ Found {len(variables)} variables")
+    
+    if debug_mode:
+        print("\n🔍 DEBUG: Parsed variables:")
+        for key in sorted(variables.keys()):
+            value = variables[key]
+            if isinstance(value, str) and len(value) > 50:
+                print(f"   {key} = {value[:50]}...")
+            elif isinstance(value, (list, dict)) and len(str(value)) > 100:
+                print(f"   {key} = {type(value).__name__} (length: {len(value)})")
+            else:
+                print(f"   {key} = {value}")
     
     # Show key values
     if 'mgmt_esxi_hosts' in variables:
