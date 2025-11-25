@@ -278,7 +278,7 @@ vcf_operations_load_balancer_fqdn = null
 
 vcf_operations_nodes = [
   {
-    hostname      = "vcops9.vcf.lab"
+    hostname      = "ops-a.site-a.vcf.lab"
     type          = "master"
     root_password = "VMware123!VMware123!"
   }
