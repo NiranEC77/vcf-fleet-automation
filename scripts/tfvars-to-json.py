@@ -20,42 +20,57 @@ def parse_tfvars(tfvars_content):
     # Remove comments
     lines = []
     for line in tfvars_content.split('\n'):
-        # Remove inline comments
-        if '#' in line:
-            line = line[:line.index('#')]
-        lines.append(line.strip())
+        # Remove inline comments (but preserve # in strings)
+        in_string = False
+        clean_line = ""
+        for i, char in enumerate(line):
+            if char == '"' and (i == 0 or line[i-1] != '\\'):
+                in_string = not in_string
+            if char == '#' and not in_string:
+                break
+            clean_line += char
+        lines.append(clean_line.strip())
     
     content = '\n'.join(lines)
     
-    # Extract variable assignments
-    pattern = r'(\w+)\s*=\s*(.+?)(?=\n\w+\s*=|\Z)'
-    matches = re.findall(pattern, content, re.DOTALL)
+    # Extract variable assignments - improved pattern
+    pattern = r'(\w+)\s*=\s*(.+?)(?=\n(?:\w+\s*=|\s*$)|\Z)'
+    matches = re.findall(pattern, content, re.DOTALL | re.MULTILINE)
     
     for var_name, var_value in matches:
         var_value = var_value.strip()
         
-        # Parse the value
-        if var_value.lower() in ['true', 'false']:
-            variables[var_name] = var_value.lower() == 'true'
-        elif var_value.lower() == 'null':
-            variables[var_name] = None
-        elif var_value.startswith('"') and var_value.endswith('"'):
-            variables[var_name] = var_value.strip('"')
-        elif var_value.startswith('['):
-            # List - use simple extraction
-            variables[var_name] = extract_list(var_value)
-        elif var_value.startswith('{'):
-            # Object - use simple extraction
-            variables[var_name] = extract_object(var_value)
-        else:
-            # Try as number
-            try:
-                if '.' in var_value:
-                    variables[var_name] = float(var_value)
-                else:
-                    variables[var_name] = int(var_value)
-            except ValueError:
+        try:
+            # Parse the value
+            if var_value.lower() in ['true', 'false']:
+                variables[var_name] = var_value.lower() == 'true'
+            elif var_value.lower() == 'null':
+                variables[var_name] = None
+            elif var_value.startswith('"') and var_value.endswith('"'):
                 variables[var_name] = var_value.strip('"')
+            elif var_value.startswith('['):
+                # List - check if it's a simple list or list of objects
+                if '{' in var_value:
+                    # Complex list - store as empty for now
+                    variables[var_name] = []
+                else:
+                    variables[var_name] = extract_list(var_value)
+            elif var_value.startswith('{'):
+                # Object - use simple extraction
+                variables[var_name] = extract_object(var_value)
+            else:
+                # Try as number
+                try:
+                    if '.' in var_value:
+                        variables[var_name] = float(var_value)
+                    else:
+                        variables[var_name] = int(var_value)
+                except ValueError:
+                    variables[var_name] = var_value.strip('"')
+        except Exception as e:
+            # On parse error, skip this variable
+            print(f"⚠️  Warning: Could not parse variable '{var_name}': {e}")
+            continue
     
     return variables
 
@@ -101,18 +116,25 @@ def extract_object(obj_str):
 def convert_to_vcf_json(variables):
     """Convert parsed tfvars to VCF JSON format"""
     
+    # Helper function to safely get values
+    def safe_get(key, default):
+        value = variables.get(key, default)
+        if value is None:
+            return default
+        return value
+    
     # Build the VCF JSON spec
     spec = {
-        "sddcId": variables.get('instance_id', 'vcf'),
-        "vcfInstanceName": variables.get('instance_id', 'vcf'),
+        "sddcId": safe_get('instance_id', 'vcf'),
+        "vcfInstanceName": safe_get('instance_id', 'vcf'),
         "workflowType": "VCF",
-        "version": variables.get('vcf_version', '9.0.1.0'),
-        "ceipEnabled": variables.get('ceip_enabled', True),
+        "version": safe_get('vcf_version', '9.0.1.0'),
+        "ceipEnabled": safe_get('ceip_enabled', True),
         "dnsSpec": {
-            "nameservers": [variables.get('dns_nameserver', '10.1.1.1')],
-            "subdomain": variables.get('dns_domain', 'vcf.lab')
+            "nameservers": [safe_get('dns_nameserver', '10.1.1.1')],
+            "subdomain": safe_get('dns_domain', 'vcf.lab')
         },
-        "ntpServers": variables.get('ntp_servers', ['10.1.1.1']),
+        "ntpServers": safe_get('ntp_servers', ['10.1.1.1']) if isinstance(variables.get('ntp_servers'), list) else ['10.1.1.1'],
     }
     
     # vCenter configuration
@@ -175,10 +197,18 @@ def convert_to_vcf_json(variables):
     
     # VCF Operations
     if variables.get('vcf_operations_enabled', False):
+        ops_nodes = variables.get('vcf_operations_nodes', [])
+        ops_hostname = 'vcf-ops.vcf.lab'
+        
+        # Extract hostname if nodes list is not empty
+        if ops_nodes and len(ops_nodes) > 0:
+            if isinstance(ops_nodes[0], dict):
+                ops_hostname = ops_nodes[0].get('hostname', 'vcf-ops.vcf.lab')
+        
         spec["vcfOperationsSpec"] = {
             "nodes": [
                 {
-                    "hostname": variables.get('vcf_operations_nodes', [{}])[0].get('hostname', 'vcf-ops.vcf.lab'),
+                    "hostname": ops_hostname,
                     "rootUserPassword": "VMware123!",
                     "type": "master"
                 }
