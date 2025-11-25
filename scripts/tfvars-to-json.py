@@ -47,13 +47,15 @@ def parse_tfvars(tfvars_content):
             elif var_value.lower() == 'null':
                 variables[var_name] = None
             elif var_value.startswith('"') and var_value.endswith('"'):
-                variables[var_name] = var_value.strip('"')
+                # Remove quotes but preserve all content including special chars
+                variables[var_name] = var_value[1:-1]
             elif var_value.startswith('['):
                 # List - check if it's a simple list or list of objects
                 if '{' in var_value:
-                    # Complex list - store as empty for now
-                    variables[var_name] = []
+                    # Complex list of objects
+                    variables[var_name] = extract_list_of_objects(var_value)
                 else:
+                    # Simple list
                     variables[var_name] = extract_list(var_value)
             elif var_value.startswith('{'):
                 # Object - use simple extraction
@@ -82,17 +84,33 @@ def extract_list(list_str):
     current = ""
     in_string = False
     in_object = 0
+    escape_next = False
     
-    for char in list_str[1:-1]:  # Skip [ and ]
-        if char == '"' and (not current or current[-1] != '\\'):
+    for i, char in enumerate(list_str[1:-1]):  # Skip [ and ]
+        if escape_next:
+            current += char
+            escape_next = False
+            continue
+            
+        if char == '\\':
+            escape_next = True
+            current += char
+            continue
+            
+        if char == '"' and not escape_next:
             in_string = not in_string
+            current += char
         elif char == '{' and not in_string:
             in_object += 1
+            current += char
         elif char == '}' and not in_string:
             in_object -= 1
-        
-        if char == ',' and not in_string and in_object == 0:
-            item = current.strip().strip('"')
+            current += char
+        elif char == ',' and not in_string and in_object == 0:
+            item = current.strip()
+            # Remove quotes but preserve content
+            if item.startswith('"') and item.endswith('"'):
+                item = item[1:-1]
             if item:
                 items.append(item)
             current = ""
@@ -100,7 +118,9 @@ def extract_list(list_str):
             current += char
     
     if current.strip():
-        item = current.strip().strip('"')
+        item = current.strip()
+        if item.startswith('"') and item.endswith('"'):
+            item = item[1:-1]
         if item:
             items.append(item)
     
@@ -108,9 +128,74 @@ def extract_list(list_str):
 
 
 def extract_object(obj_str):
-    """Extract object from HCL format - simplified"""
-    # For complex objects, we'll just store the string for now
-    return obj_str
+    """Extract object from HCL format"""
+    # Parse simple key-value pairs
+    obj = {}
+    obj_str = obj_str.strip()
+    if not obj_str.startswith('{'):
+        return obj_str
+    
+    # Remove outer braces
+    content = obj_str[1:-1].strip()
+    
+    # Simple key = value extraction
+    lines = content.split('\n')
+    for line in lines:
+        line = line.strip()
+        if '=' in line and not line.startswith('#'):
+            parts = line.split('=', 1)
+            if len(parts) == 2:
+                key = parts[0].strip()
+                value = parts[1].strip().rstrip(',')
+                
+                # Parse value
+                if value.startswith('"') and value.endswith('"'):
+                    obj[key] = value[1:-1]
+                elif value.lower() in ['true', 'false']:
+                    obj[key] = value.lower() == 'true'
+                elif value.lower() == 'null':
+                    obj[key] = None
+                else:
+                    try:
+                        obj[key] = int(value) if '.' not in value else float(value)
+                    except:
+                        obj[key] = value
+    
+    return obj
+
+
+def extract_list_of_objects(list_str):
+    """Extract a list of objects from HCL format"""
+    objects = []
+    current_obj = ""
+    brace_count = 0
+    in_string = False
+    
+    # Remove outer brackets
+    content = list_str.strip()[1:-1]
+    
+    for char in content:
+        if char == '"' and (not current_obj or current_obj[-1] != '\\'):
+            in_string = not in_string
+        
+        if not in_string:
+            if char == '{':
+                brace_count += 1
+            elif char == '}':
+                brace_count -= 1
+        
+        current_obj += char
+        
+        # End of object
+        if brace_count == 0 and current_obj.strip():
+            obj_str = current_obj.strip().rstrip(',')
+            if obj_str.startswith('{'):
+                parsed = extract_object(obj_str)
+                if isinstance(parsed, dict) and parsed:
+                    objects.append(parsed)
+            current_obj = ""
+    
+    return objects
 
 
 def convert_to_vcf_json(variables):
@@ -167,22 +252,149 @@ def convert_to_vcf_json(variables):
     }
     
     # NSX configuration
+    nsx_managers = variables.get('mgmt_nsx_managers', [])
+    nsx_manager_nodes = []
+    
+    if isinstance(nsx_managers, list) and nsx_managers:
+        for mgr in nsx_managers:
+            if isinstance(mgr, dict):
+                nsx_manager_nodes.append({
+                    "hostname": mgr.get('hostname', mgr.get('name', 'nsx-mgmt-01'))
+                })
+    
+    # If no managers configured, add a default
+    if not nsx_manager_nodes:
+        nsx_manager_nodes.append({"hostname": "nsx-mgmt-01"})
+    
     spec["nsxtSpec"] = {
-        "nsxtManagerSize": variables.get('mgmt_nsx_manager_size', 'medium'),
-        "vipFqdn": variables.get('mgmt_nsx_vip_fqdn', 'nsx-vip.vcf.lab'),
+        "nsxtManagerSize": safe_get('mgmt_nsx_manager_size', 'medium'),
+        "nsxtManagers": nsx_manager_nodes,
+        "vipFqdn": safe_get('mgmt_nsx_vip_fqdn', 'nsx-vip.vcf.lab'),
         "useExistingDeployment": False,
-        "nsxtAdminPassword": variables.get('mgmt_nsx_admin_password', 'VMware123!'),
-        "nsxtAuditPassword": variables.get('mgmt_nsx_audit_password', 'VMware123!'),
-        "rootNsxtManagerPassword": variables.get('mgmt_nsx_root_password', 'VMware123!'),
+        "nsxtAdminPassword": safe_get('mgmt_nsx_admin_password', 'VMware123!'),
+        "nsxtAuditPassword": safe_get('mgmt_nsx_audit_password', 'VMware123!'),
+        "rootNsxtManagerPassword": safe_get('mgmt_nsx_root_password', 'VMware123!'),
         "skipNsxOverlayOverManagementNetwork": True,
-        "transportVlanId": variables.get('mgmt_nsx_transport_vlan_id', 18)
+        "transportVlanId": safe_get('mgmt_nsx_transport_vlan_id', 18)
     }
     
-    # Note: Host specs, network specs, and DVS specs would need more complex parsing
-    # For now, add placeholders
-    spec["hostSpecs"] = []
-    spec["networkSpecs"] = []
-    spec["dvsSpecs"] = []
+    # Add NSX IP pool if configured
+    nsx_ip_pool = variables.get('mgmt_nsx_ip_pool')
+    if nsx_ip_pool and isinstance(nsx_ip_pool, dict):
+        subnets = nsx_ip_pool.get('subnets', [])
+        if subnets and len(subnets) > 0:
+            subnet = subnets[0] if isinstance(subnets[0], dict) else {}
+            ip_ranges = subnet.get('ip_ranges', [])
+            pool_ranges = []
+            
+            if isinstance(ip_ranges, list):
+                for r in ip_ranges:
+                    if isinstance(r, dict):
+                        pool_ranges.append({
+                            "start": r.get('start', ''),
+                            "end": r.get('end', '')
+                        })
+            
+            spec["nsxtSpec"]["ipAddressPoolSpec"] = {
+                "name": nsx_ip_pool.get('name', 'tep-pool'),
+                "description": nsx_ip_pool.get('description', 'NSX TEP IP Pool'),
+                "subnets": [{
+                    "cidr": subnet.get('cidr', ''),
+                    "gateway": subnet.get('gateway', ''),
+                    "ipAddressPoolRanges": pool_ranges
+                }]
+            }
+    
+    # ESXi Host Specs
+    mgmt_hosts = variables.get('mgmt_esxi_hosts', [])
+    if isinstance(mgmt_hosts, list) and mgmt_hosts:
+        spec["hostSpecs"] = []
+        for host in mgmt_hosts:
+            if isinstance(host, dict):
+                host_spec = {
+                    "hostname": host.get('hostname', ''),
+                    "credentials": {
+                        "username": host.get('username', 'root'),
+                        "password": host.get('password', '')
+                    }
+                }
+                # Add SSL thumbprint if provided and not empty
+                ssl_thumb = host.get('ssl_thumbprint', '').strip()
+                if ssl_thumb:
+                    host_spec["sslThumbprint"] = ssl_thumb
+                
+                spec["hostSpecs"].append(host_spec)
+    
+    # Network Specs
+    mgmt_networks = variables.get('mgmt_networks', [])
+    if isinstance(mgmt_networks, list) and mgmt_networks:
+        spec["networkSpecs"] = []
+        for network in mgmt_networks:
+            if isinstance(network, dict):
+                net_spec = {
+                    "networkType": network.get('network_type', ''),
+                    "subnet": network.get('subnet', ''),
+                    "gateway": network.get('gateway', ''),
+                    "subnetMask": network.get('subnet_mask', ''),
+                    "vlanId": str(network.get('vlan_id', '0')),
+                    "mtu": network.get('mtu', 1500),
+                    "teamingPolicy": network.get('teaming_policy', 'loadbalance_loadbased'),
+                    "activeUplinks": network.get('active_uplinks', ['uplink1', 'uplink2']),
+                    "standbyUplinks": network.get('standby_uplinks', []),
+                    "portGroupKey": network.get('port_group_key', '')
+                }
+                
+                # Add IP ranges if present
+                ip_ranges = network.get('ip_ranges', [])
+                if isinstance(ip_ranges, list) and ip_ranges:
+                    net_spec["includeIpAddressRanges"] = []
+                    for ip_range in ip_ranges:
+                        if isinstance(ip_range, dict):
+                            net_spec["includeIpAddressRanges"].append({
+                                "startIpAddress": ip_range.get('start', ''),
+                                "endIpAddress": ip_range.get('end', '')
+                            })
+                
+                spec["networkSpecs"].append(net_spec)
+    
+    # DVS Specs
+    mgmt_dvs = variables.get('mgmt_dvs_configs', [])
+    if isinstance(mgmt_dvs, list) and mgmt_dvs:
+        spec["dvsSpecs"] = []
+        for dvs in mgmt_dvs:
+            if isinstance(dvs, dict):
+                dvs_spec = {
+                    "dvsName": dvs.get('name', ''),
+                    "networks": dvs.get('networks', []),
+                    "mtu": dvs.get('mtu', 9000),
+                    "vmnicsToUplinks": []
+                }
+                
+                # Add vmnic mappings
+                vmnic_mappings = dvs.get('vmnic_mappings', [])
+                if isinstance(vmnic_mappings, list):
+                    for mapping in vmnic_mappings:
+                        if isinstance(mapping, dict):
+                            dvs_spec["vmnicsToUplinks"].append({
+                                "id": mapping.get('vmnic', ''),
+                                "uplink": mapping.get('uplink', '')
+                            })
+                
+                # Add NSX switch config if present
+                nsx_config = dvs.get('nsx_switch_config')
+                if nsx_config and isinstance(nsx_config, dict):
+                    transport_zones = nsx_config.get('transport_zones', [])
+                    if transport_zones:
+                        dvs_spec["nsxtSwitchConfig"] = {
+                            "transportZones": transport_zones
+                        }
+                
+                # Add NSX teamings if present
+                nsx_teamings = dvs.get('nsx_teamings', [])
+                if isinstance(nsx_teamings, list) and nsx_teamings:
+                    dvs_spec["nsxTeamings"] = nsx_teamings
+                
+                spec["dvsSpecs"].append(dvs_spec)
     
     # VCF Automation
     if variables.get('vcf_automation_enabled', False):
@@ -274,6 +486,25 @@ def main():
     print("🔄 Parsing terraform variables...")
     variables = parse_tfvars(tfvars_content)
     
+    # Show what was parsed
+    print(f"   ✓ Found {len(variables)} variables")
+    
+    # Show key values
+    if 'mgmt_esxi_hosts' in variables:
+        hosts = variables['mgmt_esxi_hosts']
+        if isinstance(hosts, list):
+            print(f"   ✓ ESXi Hosts: {len(hosts)} hosts")
+    
+    if 'mgmt_networks' in variables:
+        networks = variables['mgmt_networks']
+        if isinstance(networks, list):
+            print(f"   ✓ Networks: {len(networks)} networks")
+    
+    if 'mgmt_dvs_configs' in variables:
+        dvs = variables['mgmt_dvs_configs']
+        if isinstance(dvs, list):
+            print(f"   ✓ DVS Configs: {len(dvs)} switches")
+    
     # Convert to VCF JSON
     print("🔧 Converting to VCF JSON format...")
     vcf_spec = convert_to_vcf_json(variables)
@@ -283,11 +514,26 @@ def main():
     with open(output_file, 'w') as f:
         json.dump(vcf_spec, f, indent=2)
     
+    # Show summary
     print(f"✅ Done! VCF JSON spec saved to: {output_file}")
-    print(f"\n📋 You can now upload this file to Cloud Builder UI for validation:")
+    print(f"\n📊 Generated spec includes:")
+    print(f"   • {len(vcf_spec.get('hostSpecs', []))} ESXi hosts")
+    print(f"   • {len(vcf_spec.get('networkSpecs', []))} networks")
+    print(f"   • {len(vcf_spec.get('dvsSpecs', []))} distributed switches")
+    print(f"   • {len(vcf_spec.get('nsxtSpec', {}).get('nsxtManagers', []))} NSX managers")
+    
+    if vcf_spec.get('vcfAutomationSpec'):
+        print(f"   • VCF Automation: Enabled")
+    if vcf_spec.get('vcfOperationsSpec'):
+        print(f"   • VCF Operations: Enabled")
+    if vcf_spec.get('vcfOperationsCollectorSpec'):
+        print(f"   • VCF Ops Collector: Enabled")
+    if vcf_spec.get('vcfOperationsFleetManagementSpec'):
+        print(f"   • Fleet Manager: Enabled")
+    
+    print(f"\n📋 Upload to Cloud Builder for validation:")
     print(f"   https://{variables.get('installer_host', '10.1.1.191')}/")
-    print(f"\n⚠️  Note: Host specs, network specs, and DVS specs need manual addition")
-    print(f"   or use the full Terraform deployment instead.")
+    print(f"   Navigate to: Bring-up → Upload JSON")
 
 
 if __name__ == '__main__':

@@ -324,9 +324,11 @@ variable "mgmt_nsx_transport_vlan_id" {
 }
 
 variable "mgmt_nsx_managers" {
-  description = "NSX Manager hostnames"
+  description = "NSX Manager nodes configuration"
   type = list(object({
+    name     = string
     hostname = string
+    ip       = optional(string, "")
   }))
 }
 

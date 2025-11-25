@@ -173,7 +173,7 @@ resource "vcf_instance" "management_domain" {
       dynamic "nsx_manager" {
         for_each = var.mgmt_nsx_managers
         content {
-          hostname = nsx_manager.value.hostname
+          hostname = nsx_manager.value.hostname != "" ? nsx_manager.value.hostname : nsx_manager.value.name
         }
       }
 

@@ -234,7 +234,9 @@ mgmt_nsx_transport_vlan_id = 18
 
 mgmt_nsx_managers = [
   {
-    hostname = "nsx-mgmt-01a"
+    name     = "nsx-mgmt-01a"
+    hostname = "nsx-mgmt-01a.site-a.vcf.lab"
+    ip       = "10.1.1.20"
   }
 ]
 
